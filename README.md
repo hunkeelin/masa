@@ -2,6 +2,12 @@
 
 Masa is an open source desktop application that provides AI-powered coding assistance, inspired by [Cluely](https://cluely.com/) but fully free and transparent. Masa leverages advanced AI models to analyze coding problems directly from your screen and deliver structured solutions, code samples, and key insights.
 
+## 🎥 Live Demo
+
+[![Masa Live Demo](https://img.youtube.com/vi/eSEKbUN8GqE/maxresdefault.jpg)](https://youtu.be/eSEKbUN8GqE)
+
+*Click the image above to watch Masa in action*
+
 ## Features
 
 - **Screen Capture & OCR**: Capture coding problems from your screen and extract text using OCR.
