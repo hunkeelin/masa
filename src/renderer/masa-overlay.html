@@ -336,6 +336,16 @@
         <div id="settings-panel" class="settings-panel">
             <h3>⚙️ Settings</h3>
             
+            <div class="setting-group" style="background: rgba(0, 255, 100, 0.1); padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                <div style="color: #00ff64; font-size: 10px; font-weight: bold; margin-bottom: 5px;">💡 API Key Configuration:</div>
+                <div style="color: #888; font-size: 9px; line-height: 1.4;">
+                    <strong>Option 1:</strong> Set environment variables (recommended):<br/>
+                    <code>export OPENAI_API_KEY=your-key</code><br/>
+                    <code>export ANTHROPIC_API_KEY=your-key</code><br/><br/>
+                    <strong>Option 2:</strong> Enter API keys below (memory only - never saved to disk)
+                </div>
+            </div>
+            
             <div class="setting-group">
                 <label for="provider-select">AI Provider:</label>
                 <select id="provider-select" onchange="toggleApiKeyFields()">

@@ -110,18 +110,18 @@ Before installation, ensure you have the following installed:
    
    **Method A: Environment Variables (Recommended)**
    ```bash
-   # Create a .env file in the project root
-   cp config/.env.example .env
-   
-   # Edit .env and add your API keys
+   # Set environment variables before running the app
    export OPENAI_API_KEY=your-openai-key-here
    export ANTHROPIC_API_KEY=your-claude-key-here
+   
+   # Then run the application
+   npm run masa
    ```
    
    **Method B: Runtime Configuration**
    - Start the application and click the settings gear (⚙️)
    - Enter your API key in the settings panel
-   - Keys are stored in memory only for security
+   - Keys are stored in memory only for security (never saved to disk)
 
 5. **Verify installation**
    ```bash
@@ -187,11 +187,8 @@ For developers who want to contribute or modify Masa:
    │   │   └── stealth-overlay.html # Stealth overlay
    │   └── utils/               # Utility modules
    │       └── native-helper.js # Platform-specific native functions
-   ├── assets/                  # Static assets
-   │   └── eng.traineddata     # Tesseract language data
-   └── config/                  # Configuration files
-       ├── .env.example        # Environment variables template
-       └── masa-settings.example.json # Settings template
+   └── assets/                  # Static assets
+       └── eng.traineddata     # Tesseract language data
    ```
 
 ## Configuration
