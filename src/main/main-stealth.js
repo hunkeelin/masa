@@ -47,7 +47,7 @@ function createStealthOverlay() {
     }
   });
 
-  overlayWindow.loadFile('stealth-overlay.html');
+  overlayWindow.loadFile('src/renderer/stealth-overlay.html');
 
   // macOS specific exclusion attempts
   if (process.platform === 'darwin') {

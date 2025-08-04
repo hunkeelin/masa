@@ -24,35 +24,174 @@ Masa is an open source desktop application that provides AI-powered coding assis
 
 ## Getting Started
 
+### Quick Start (for experienced developers)
+
+```bash
+# Clone and setup
+git clone git@github.com:hunkeelin/masa.git
+cd masa
+npm install
+
+# Install Tesseract (macOS)
+brew install tesseract
+
+# Set your API key and run
+export OPENAI_API_KEY=your-key-here
+npm run masa
+```
+
+### Detailed Installation
+
+### Prerequisites
+
+Before installation, ensure you have the following installed:
+
+- **Node.js** (v16 or higher) - [Download from nodejs.org](https://nodejs.org/)
+- **npm** (comes with Node.js)
+- **Python** (required for native module compilation)
+  - macOS: Install via Homebrew: `brew install python`
+  - Windows: Download from [python.org](https://python.org/) or use Microsoft Store
+  - Linux: Use your package manager (e.g., `apt install python3`)
+
+> **Note**: This is a Node.js/Electron application, not a Python project. While Python is needed for compiling native modules, you don't need to create a Python virtual environment. If you want to isolate Node.js versions, consider using [nvm](https://github.com/nvm-sh/nvm) (Node Version Manager) instead.
+
+### Installation Steps
+
 1. **Clone the repository**
    ```bash
    git clone git@github.com:hunkeelin/masa.git
    cd masa
    ```
 
-2. **Install dependencies**
+2. **Install Node.js dependencies**
    ```bash
+   # Install all required packages
    npm install
+   
+   # If you encounter native module compilation issues, try:
+   npm install --build-from-source
    ```
 
-3. **Set up your API keys**
-   - Provide your OpenAI or Anthropic API key via environment variables:
-     ```bash
-     export OPENAI_API_KEY=your-openai-key
-     export ANTHROPIC_API_KEY=your-claude-key
-     ```
-   - Or enter your API key in the Masa settings panel (keys are stored in memory only).
+3. **Install system dependencies**
 
-4. **Install Tesseract language data**
-   - Masa requires the English language data for OCR. Install it via Homebrew:
-     ```bash
-     brew install tesseract
-     ```
-   - Or download `eng.traineddata` from [tesseract-ocr/tessdata](https://github.com/tesseract-ocr/tessdata) and place it in your Tesseract data directory.
-
-5. **Run the application**
+   **On macOS:**
    ```bash
+   # Install Tesseract for OCR
+   brew install tesseract
+   
+   # Install Xcode command line tools (if not already installed)
+   xcode-select --install
+   ```
+
+   **On Windows:**
+   ```bash
+   # Install via chocolatey (recommended)
+   choco install tesseract
+   
+   # Or download from: https://github.com/UB-Mannheim/tesseract/wiki
+   ```
+
+   **On Linux (Ubuntu/Debian):**
+   ```bash
+   # Install Tesseract and build tools
+   sudo apt update
+   sudo apt install tesseract-ocr tesseract-ocr-eng build-essential
+   ```
+
+4. **Set up your API keys**
+   
+   Masa requires an AI API key to function. Choose your preferred provider:
+   
+   **Getting API Keys:**
+   - **OpenAI**: Visit [platform.openai.com](https://platform.openai.com/api-keys) to create an API key
+   - **Claude (Anthropic)**: Visit [console.anthropic.com](https://console.anthropic.com/) to get your API key
+   
+   **Configuration Methods:**
+   
+   **Method A: Environment Variables (Recommended)**
+   ```bash
+   # Create a .env file in the project root
+   cp config/.env.example .env
+   
+   # Edit .env and add your API keys
+   export OPENAI_API_KEY=your-openai-key-here
+   export ANTHROPIC_API_KEY=your-claude-key-here
+   ```
+   
+   **Method B: Runtime Configuration**
+   - Start the application and click the settings gear (⚙️)
+   - Enter your API key in the settings panel
+   - Keys are stored in memory only for security
+
+5. **Verify installation**
+   ```bash
+   # Test the installation
    npm run masa
+   ```
+
+   If successful, you should see the Masa overlay window appear.
+
+### Troubleshooting
+
+**Common Issues:**
+
+- **"Failed to compile native modules"**: Install Python and build tools for your platform
+- **"Tesseract not found"**: Ensure Tesseract is installed and in your PATH
+- **"Permission denied on macOS"**: Grant screen recording permissions in System Preferences > Security & Privacy
+- **"API key invalid"**: Verify your API key in the settings panel using the "Test API Key" button
+
+### Running Modes
+
+Masa offers different running modes for various use cases:
+
+```bash
+# Full AI-powered assistant (recommended)
+npm run masa
+
+# Basic stealth overlay demo
+npm run stealth
+
+# Simple overlay test
+npm start
+
+# Development mode with logging
+npm run dev
+```
+
+### Development Setup
+
+For developers who want to contribute or modify Masa:
+
+1. **Enable development mode**
+   ```bash
+   # Run with detailed logging
+   npm run dev
+   ```
+
+2. **Build native modules** (if needed)
+   ```bash
+   npm run build-native
+   ```
+
+3. **Code structure**
+   ```
+   ├── src/
+   │   ├── main/                # Main process files
+   │   │   ├── masa-main.js     # Main AI application
+   │   │   ├── main-stealth.js  # Stealth overlay demo
+   │   │   └── main.js          # Basic overlay test
+   │   ├── renderer/            # Renderer process files (HTML/CSS/JS)
+   │   │   ├── masa-overlay.html # AI assistant UI
+   │   │   ├── overlay.html     # Basic overlay
+   │   │   ├── overlay-advanced.html # Advanced overlay
+   │   │   └── stealth-overlay.html # Stealth overlay
+   │   └── utils/               # Utility modules
+   │       └── native-helper.js # Platform-specific native functions
+   ├── assets/                  # Static assets
+   │   └── eng.traineddata     # Tesseract language data
+   └── config/                  # Configuration files
+       ├── .env.example        # Environment variables template
+       └── masa-settings.example.json # Settings template
    ```
 
 ## Configuration
@@ -60,6 +199,26 @@ Masa is an open source desktop application that provides AI-powered coding assis
 - **Hotkey**: The default hotkey is `Ctrl+Shift+J`. You can change this in the settings panel.
 - **API Providers**: Switch between OpenAI and Claude models as needed.
 - **Overlay**: The overlay window can be repositioned and minimized as required.
+
+## Usage
+
+1. **Start Masa**: Run `npm run masa` to launch the application
+2. **Position the overlay**: Drag the window to your preferred location
+3. **Analyze problems**: 
+   - Press `Ctrl+Shift+J` (or your configured hotkey) to capture and analyze your screen
+   - Or click the 🔍 button in the overlay
+4. **View solutions**: Solutions appear in the overlay with code examples and explanations
+5. **Manage settings**: Click ⚙️ to configure API keys, models, and hotkeys
+
+### Expected Costs
+
+API usage costs are typically very low for casual use:
+
+- **OpenAI GPT-3.5 Turbo**: ~$0.003 per analysis (recommended for cost-effectiveness)
+- **OpenAI GPT-4**: ~$0.03-0.06 per analysis (higher quality)
+- **Claude 3.5 Sonnet**: ~$0.024 per analysis (premium quality)
+
+Example: 100 coding problems analyzed with GPT-3.5 would cost approximately $0.30.
 
 ## Security
 

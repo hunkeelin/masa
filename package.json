@@ -2,11 +2,11 @@
   "name": "masa-ai-assistant",
   "version": "1.0.0",
   "description": "AI-powered desktop assistant with stealth overlay technology for screen analysis and coding solutions",
-  "main": "main.js",
+  "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",
-    "stealth": "electron main-stealth.js",
-    "masa": "electron masa-main.js",
+    "stealth": "electron src/main/main-stealth.js",
+    "masa": "electron src/main/masa-main.js",
     "dev": "electron . --enable-logging",
     "build-native": "node-gyp rebuild"
   },

@@ -1,6 +1,6 @@
 const { app, BrowserWindow, screen } = require('electron');
 const path = require('path');
-const nativeHelper = require('./native-helper');
+const nativeHelper = require('../utils/native-helper');
 
 let overlayWindow;
 
@@ -70,7 +70,7 @@ function createOverlayWindow() {
   });
 
   // Load the HTML content
-  overlayWindow.loadFile('overlay-advanced.html');
+  overlayWindow.loadFile('src/renderer/overlay-advanced.html');
 
   // Platform-specific screen capture exclusion
   if (process.platform === 'darwin') {

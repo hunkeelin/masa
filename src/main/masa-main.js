@@ -134,7 +134,7 @@ function createMasaOverlay() {
     }
   });
 
-  overlayWindow.loadFile('masa-overlay.html');
+  overlayWindow.loadFile(path.join(__dirname, '../renderer/masa-overlay.html'));
 
   // Handle window close event - terminate the entire application
   overlayWindow.on('closed', () => {
