@@ -306,17 +306,17 @@
     </div>
     
     <div class="content">
-        <div id="status" class="status">Ready - Press Ctrl+Shift+J to analyze screen</div>
+        <div id="status" class="status">Ready - Press your configured hotkey to analyze screen</div>
         
         <div id="welcome" class="welcome">
             <h2>AI Coding Assistant</h2>
-            <p>Press <span class="key">Ctrl+Shift+J</span> to capture and analyze your screen for coding problems.</p>
+            <p>Press your configured hotkey to capture and analyze your screen for coding problems.</p>
             <p>Masa will automatically detect LeetCode-style problems and provide solutions.</p>
             
             <div class="shortcuts">
                 <div class="shortcut">
                     <span>Analyze Screen:</span>
-                    <span class="key">Ctrl+Shift+J</span>
+                    <span class="key" id="hotkey-display">Ctrl+Shift+J</span>
                 </div>
                 <div class="shortcut">
                     <span>Settings:</span>
@@ -372,6 +372,13 @@
                 </small>
             </div>
             
+            <div class="setting-group">
+                <label for="hotkey-input">Global Hotkey:</label>
+                <input type="text" id="hotkey-input" placeholder="CommandOrControl+Shift+J" readonly onclick="recordHotkey()" />
+                <small style="color: #888; font-size: 9px;">Click to record a new hotkey combination</small>
+                <div id="hotkey-status" style="font-size: 9px; margin-top: 4px; color: #888;"></div>
+            </div>
+            
             <div class="api-status">
                 <span id="api-status-text">API Key: Not configured</span>
             </div>
@@ -386,7 +393,7 @@
         </div>
     </div>
     
-    <div class="hotkey-hint">Ctrl+Shift+J</div>
+    <div class="hotkey-hint" id="hotkey-hint">Ctrl+Shift+J</div>
     
     <script>
         const { ipcRenderer } = require('electron');
@@ -506,6 +513,7 @@
             const claudeApiKey = document.getElementById('claude-api-key').value.trim();
             const openaiApiKey = document.getElementById('api-key').value.trim();
             const model = document.getElementById('model-select').value;
+            const hotkey = document.getElementById('hotkey-input').value.trim();
             
             let apiKey = provider === 'claude' ? claudeApiKey : openaiApiKey;
             
@@ -526,6 +534,7 @@
             const settings = {
                 provider,
                 model,
+                hotkey: hotkey || 'CommandOrControl+Shift+J',
                 [provider === 'claude' ? 'claudeApiKey' : 'apiKey']: apiKey
             };
             
@@ -566,6 +575,93 @@
             statusContainer.className = `api-status ${type}`;
         }
         
+        // Hotkey recording functionality
+        let isRecordingHotkey = false;
+        let recordedKeys = [];
+        
+        function recordHotkey() {
+            if (isRecordingHotkey) return;
+            
+            isRecordingHotkey = true;
+            recordedKeys = [];
+            
+            const input = document.getElementById('hotkey-input');
+            const status = document.getElementById('hotkey-status');
+            
+            input.value = '';
+            input.placeholder = 'Press keys...';
+            status.textContent = '🎯 Recording... Press your desired key combination';
+            status.style.color = '#00ff64';
+            
+            // Focus the input to capture key events
+            input.focus();
+        }
+        
+        function formatHotkey(keys) {
+            const modifiers = [];
+            const regularKeys = [];
+            
+            keys.forEach(key => {
+                if (['Control', 'Meta', 'Alt', 'Shift'].includes(key)) {
+                    if (key === 'Control') modifiers.push('CommandOrControl');
+                    else if (key === 'Meta') modifiers.push('CommandOrControl');
+                    else modifiers.push(key);
+                } else {
+                    regularKeys.push(key.toUpperCase());
+                }
+            });
+            
+            return [...new Set(modifiers)].concat(regularKeys).join('+');
+        }
+        
+        function displayHotkey(electronFormat) {
+            // Convert Electron format to display format
+            return electronFormat
+                .replace('CommandOrControl', process.platform === 'darwin' ? 'Cmd' : 'Ctrl')
+                .replace(/\+/g, ' + ');
+        }
+        
+        // Global key event listener for hotkey recording
+        document.addEventListener('keydown', (e) => {
+            if (!isRecordingHotkey) return;
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const key = e.key;
+            
+            if (!recordedKeys.includes(key)) {
+                recordedKeys.push(key);
+            }
+            
+            // Show current combination
+            const formatted = formatHotkey(recordedKeys);
+            document.getElementById('hotkey-input').value = formatted;
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            if (!isRecordingHotkey) return;
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // End recording after all keys are released
+            setTimeout(() => {
+                if (recordedKeys.length > 0) {
+                    const formatted = formatHotkey(recordedKeys);
+                    const input = document.getElementById('hotkey-input');
+                    const status = document.getElementById('hotkey-status');
+                    
+                    input.value = formatted;
+                    input.placeholder = 'CommandOrControl+Shift+J';
+                    status.textContent = `✅ Hotkey set to: ${displayHotkey(formatted)}`;
+                    status.style.color = '#28ca42';
+                    
+                    isRecordingHotkey = false;
+                }
+            }, 100);
+        });
+        
         // Listen for messages from main process
         ipcRenderer.on('update-status', (event, message) => {
             updateStatus(message);
@@ -596,6 +692,17 @@
                 document.getElementById('model-select').value = settings.model;
             }
             
+            // Set hotkey
+            if (settings.hotkey) {
+                document.getElementById('hotkey-input').value = settings.hotkey;
+                // Update display elements
+                const displayFormat = displayHotkey(settings.hotkey);
+                document.getElementById('hotkey-display').textContent = displayFormat;
+                document.getElementById('hotkey-hint').textContent = displayFormat;
+                // Update status message
+                document.getElementById('status').textContent = `Ready - Press ${displayFormat} to analyze screen`;
+            }
+            
             // Update status
             const hasKey = (settings.provider === 'claude' && settings.claudeApiKey) || 
                           (settings.provider === 'openai' && settings.apiKey);
@@ -617,12 +724,12 @@
         
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
+            if (isRecordingHotkey) return; // Don't interfere with hotkey recording
+            
             if (e.key === 'Escape') {
                 hideOverlay();
-            } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'J') {
-                e.preventDefault();
-                triggerAnalysis();
             }
+            // Note: Global hotkey is handled by the main process
         });
         
         console.log('Masa overlay loaded');

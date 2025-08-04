@@ -21,7 +21,7 @@ It's like having a friendly coding mentor that lives in your computer and helps 
 - **Screen Capture & OCR**: Captures and reads text from your screen using Tesseract.js
 - **LeetCode Detection**: Automatically identifies coding problems and challenges
 - **AI Solutions**: Uses OpenAI GPT-4 to provide detailed solutions with explanations
-- **Global Hotkey**: Press `Ctrl+Shift+J` to trigger analysis from anywhere
+- **Global Hotkey**: Customizable hotkey (default: `Ctrl+Shift+J`) to trigger analysis from anywhere
 - **Stealth Mode**: Invisible to screen sharing and recording (Google Meet, Zoom, etc.)
 
 ### UI Features
@@ -40,9 +40,9 @@ npm install
 # Download Tesseract language data for English
 curl -L https://github.com/tesseract-ocr/tessdata/raw/main/eng.traineddata -o eng.traineddata
 
-# Copy settings file and add your OpenAI API key
-cp masa-settings.example.json masa-settings.json
-# Edit masa-settings.json and add your OpenAI API key
+# Optional: Set environment variables (or use the UI)
+cp .env.example .env
+# Edit .env and add your API keys (optional - can be set in UI)
 ```
 
 ### 2. Run Masa
@@ -56,7 +56,7 @@ npm run stealth
 
 ### 3. Usage
 1. **Open any coding platform** (LeetCode, HackerRank, etc.)
-2. **Press `Ctrl+Shift+J`** to capture and analyze the screen
+2. **Press your configured hotkey** (default: `Ctrl+Shift+J`) to capture and analyze the screen
 3. **View the solution** in the overlay window
 4. **Drag the window** by clicking the title bar
 5. **Hide/show** using the minimize button
@@ -87,11 +87,24 @@ The application uses several techniques to avoid detection:
 - **Solution Generation**: OpenAI GPT-4 provides detailed solutions
 - **Fallback Solutions**: Built-in solutions for common problems
 
+## 🔒 Security & Privacy
+
+### API Key Protection
+- **Memory-Only Storage**: API keys are never saved to disk
+- **Environment Variables**: Load keys from `.env` file (optional)
+- **UI Configuration**: Set keys through secure interface
+- **No Persistent Files**: No sensitive data stored permanently
+
+### Data Privacy
+- **Local Processing**: All screen capture and OCR happens locally
+- **Minimal Data Transfer**: Only extracted text sent to AI APIs
+- **No Data Retention**: No conversation history or personal data stored
+
 ## 🎮 Controls
 
 | Action | Method |
 |--------|--------|
-| **Analyze Screen** | `Ctrl+Shift+J` |
+| **Analyze Screen** | `Customizable` (default: `Ctrl+Shift+J`) |
 | **Move Window** | Drag title bar |
 | **Hide Window** | Click minimize (−) button |
 | **Close Window** | Click close (×) button or `Esc` |
@@ -132,7 +145,7 @@ CODING_KEYWORD_THRESHOLD=3  # Sensitivity for problem detection
 1. **Start Masa**: `npm run masa`
 2. **Open video call**: Google Meet, Zoom, Teams, etc.
 3. **Start screen sharing**
-4. **Trigger analysis**: Press `Ctrl+Shift+J`
+4. **Trigger analysis**: Press your configured hotkey (default: `Ctrl+Shift+J`)
 5. **Check if overlay is visible** to other participants
 
 ## ⚠️ Important Notes

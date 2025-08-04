@@ -146,5 +146,10 @@ Thumbs.db
 # Tesseract language data files (download separately)
 *.traineddata
 
-# Settings file with API keys
+# Settings file with API keys (deprecated - now kept in memory only)
 masa-settings.json
+
+# Environment files with API keys
+.env
+.env.local
+.env.*.local

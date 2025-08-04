@@ -13,7 +13,8 @@ let currentSettings = {
   apiKey: process.env.OPENAI_API_KEY || '',
   claudeApiKey: process.env.ANTHROPIC_API_KEY || '',
   model: 'gpt-3.5-turbo', // Default to GPT-3.5 Turbo
-  provider: 'openai' // Default to OpenAI
+  provider: 'openai', // Default to OpenAI
+  hotkey: 'CommandOrControl+Shift+J' // Default hotkey
 };
 
 // Initialize AI clients
@@ -36,28 +37,44 @@ function initializeAIClients() {
   }
 }
 
-// Load settings from file
+// Load settings from environment variables only
 function loadSettings() {
-  try {
-    const settingsPath = path.join(__dirname, 'masa-settings.json');
-    if (fs.existsSync(settingsPath)) {
-      const savedSettings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
-      currentSettings = { ...currentSettings, ...savedSettings };
-    }
-  } catch (error) {
-    console.log('Error loading settings:', error);
-  }
+  // Settings are already loaded from environment variables in currentSettings
+  // No file loading needed - API keys only exist in memory
   initializeAIClients();
 }
 
-// Save settings to file
+// Settings are kept in memory only - no file saving
 function saveSettings() {
-  try {
-    const settingsPath = path.join(__dirname, 'masa-settings.json');
-    fs.writeFileSync(settingsPath, JSON.stringify(currentSettings, null, 2));
-  } catch (error) {
-    console.log('Error saving settings:', error);
+  // Settings are only kept in memory for security
+  // No persistent storage of API keys
+}
+
+// Register global hotkey dynamically
+function registerHotkey() {
+  // Unregister existing hotkey
+  globalShortcut.unregisterAll();
+  
+  // Register new hotkey
+  const registered = globalShortcut.register(currentSettings.hotkey, () => {
+    console.log(`Hotkey triggered: ${currentSettings.hotkey}`);
+    
+    if (overlayWindow) {
+      if (overlayWindow.isVisible()) {
+        captureAndAnalyzeScreen();
+      } else {
+        overlayWindow.show();
+        setTimeout(() => captureAndAnalyzeScreen(), 500);
+      }
+    }
+  });
+  
+  if (!registered) {
+    console.log('Global shortcut registration failed for:', currentSettings.hotkey);
+    return false;
   }
+  
+  return true;
 }
 
 function createMasaOverlay() {
@@ -523,6 +540,14 @@ ipcMain.on('save-settings', (event, settings) => {
   currentSettings.claudeApiKey = settings.claudeApiKey || currentSettings.claudeApiKey;
   currentSettings.model = settings.model;
   currentSettings.provider = settings.provider || 'openai';
+  
+  // Update hotkey if provided
+  if (settings.hotkey && settings.hotkey !== currentSettings.hotkey) {
+    currentSettings.hotkey = settings.hotkey;
+    // Re-register the hotkey with new combination
+    registerHotkey();
+  }
+  
   saveSettings();
   initializeAIClients();
 });
@@ -568,23 +593,8 @@ app.whenReady().then(() => {
   loadSettings(); // Load settings first
   createMasaOverlay();
   
-  // Register global hotkey: Ctrl+Shift+J
-  const registered = globalShortcut.register('CommandOrControl+Shift+J', () => {
-    console.log('Hotkey triggered: Ctrl+Shift+J');
-    
-    if (overlayWindow) {
-      if (overlayWindow.isVisible()) {
-        captureAndAnalyzeScreen();
-      } else {
-        overlayWindow.show();
-        setTimeout(() => captureAndAnalyzeScreen(), 500);
-      }
-    }
-  });
-  
-  if (!registered) {
-    console.log('Global shortcut registration failed');
-  }
+  // Register global hotkey
+  registerHotkey();
   
   // Hide from dock on macOS
   if (process.platform === 'darwin') {
