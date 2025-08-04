@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 100vw;
+            height: 100vh;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+            cursor: move;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-app-region: drag;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            position: relative;
+        }
+        
+        .text {
+            color: #00ff41;
+            font-size: 16px;
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(0, 255, 65, 0.6);
+            letter-spacing: 1px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { opacity: 0.8; text-shadow: 0 0 8px rgba(0, 255, 65, 0.6); }
+            to { opacity: 1; text-shadow: 0 0 12px rgba(0, 255, 65, 0.8); }
+        }
+        
+        .close {
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            width: 12px;
+            height: 12px;
+            background: rgba(255, 0, 0, 0.7);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: white;
+            -webkit-app-region: no-drag;
+        }
+        
+        .close:hover {
+            background: rgba(255, 0, 0, 0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text">HELLO WORLD</div>
+        <div class="close" onclick="window.close()">×</div>
+    </div>
+    
+    <script>
+        console.log('Stealth overlay loaded');
+        
+        // Right-click to close
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            window.close();
+        });
+        
+        // ESC to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                window.close();
+            }
+        });
+        
+        // Monitor for screen capture attempts
+        let captureAttempts = 0;
+        
+        // Detect potential screen sharing
+        const originalGetDisplayMedia = navigator.mediaDevices?.getDisplayMedia;
+        if (originalGetDisplayMedia) {
+            navigator.mediaDevices.getDisplayMedia = function(...args) {
+                captureAttempts++;
+                console.log('Screen capture detected:', captureAttempts);
+                
+                // Could potentially hide the overlay when screen capture is active
+                document.body.style.opacity = '0.1';
+                setTimeout(() => {
+                    document.body.style.opacity = '1';
+                }, 2000);
+                
+                return originalGetDisplayMedia.apply(this, args);
+            };
+        }
+    </script>
+</body>
+</html>

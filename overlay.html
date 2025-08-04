@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Capture Test Overlay</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            cursor: move;
+            border-radius: 10px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-app-region: drag;
+        }
+        
+        .content {
+            text-align: center;
+            text-shadow: 0 0 10px #00ff00;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+        
+        .subtitle {
+            font-size: 10px;
+            margin-top: 5px;
+            color: #00aa00;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            -webkit-app-region: no-drag;
+        }
+        
+        .close-btn:hover {
+            background: #ff3333;
+        }
+    </style>
+</head>
+<body>
+    <button class="close-btn" onclick="window.close()">×</button>
+    <div class="content">
+        <div>HELLO WORLD</div>
+        <div class="subtitle">Screen Capture Test</div>
+    </div>
+    
+    <script>
+        // Additional JavaScript for interaction
+        console.log('Overlay window loaded');
+        
+        // Log window properties for debugging
+        console.log('Window location:', window.location);
+        console.log('User agent:', navigator.userAgent);
+        
+        // Add right-click context menu to close
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            if (confirm('Close overlay window?')) {
+                window.close();
+            }
+        });
+        
+        // Double-click to toggle always on top
+        document.addEventListener('dblclick', () => {
+            const { remote } = require('electron');
+            const currentWindow = remote?.getCurrentWindow() || 
+                                 require('@electron/remote').getCurrentWindow();
+            const isAlwaysOnTop = currentWindow.isAlwaysOnTop();
+            currentWindow.setAlwaysOnTop(!isAlwaysOnTop);
+            console.log('Always on top toggled:', !isAlwaysOnTop);
+        });
+    </script>
+</body>
+</html>
