@@ -1,0 +1,29 @@
+{
+  "name": "masa-ai-assistant",
+  "version": "1.0.0",
+  "description": "AI-powered desktop assistant with stealth overlay technology for screen analysis and coding solutions",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "stealth": "electron main-stealth.js",
+    "masa": "electron masa-main.js",
+    "dev": "electron . --enable-logging",
+    "build-native": "node-gyp rebuild"
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "node-gyp": "^10.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.57.0",
+    "jimp": "^0.22.12",
+    "openai": "^4.104.0",
+    "robotjs": "^0.6.0",
+    "screenshot-desktop": "^1.15.1",
+    "tesseract.js": "^5.1.1"
+  },
+  "optionalDependencies": {
+    "ffi-napi": "^4.0.3",
+    "ref-napi": "^3.0.3"
+  }
+}

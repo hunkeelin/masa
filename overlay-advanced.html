@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Capture Test Overlay - Advanced</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            /* Try a nearly transparent background that might avoid capture */
+            background: rgba(0, 0, 0, 0.01);
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            cursor: move;
+            border-radius: 8px;
+            /* Very subtle border that might not be captured */
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-app-region: drag;
+            
+            /* CSS filters that might interfere with screen capture */
+            filter: contrast(1.1) brightness(1.1);
+            
+            /* Experimental: Try to use GPU layer */
+            transform: translateZ(0);
+            will-change: transform;
+        }
+        
+        .content {
+            text-align: center;
+            /* Make text semi-transparent */
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
+            animation: subtlePulse 3s infinite ease-in-out;
+            
+            /* Experimental rendering hints */
+            -webkit-font-smoothing: subpixel-antialiased;
+            text-rendering: optimizeSpeed;
+        }
+        
+        @keyframes subtlePulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 0.9; }
+        }
+        
+        .subtitle {
+            font-size: 9px;
+            margin-top: 3px;
+            color: rgba(0, 170, 0, 0.7);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 3px;
+            right: 8px;
+            background: rgba(255, 0, 0, 0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            font-size: 10px;
+            -webkit-app-region: no-drag;
+            opacity: 0.7;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255, 0, 0, 0.8);
+            opacity: 1;
+        }
+        
+        /* Alternative approach: Use CSS that might not be captured */
+        .stealth-mode {
+            /* Try using backdrop-filter */
+            backdrop-filter: blur(0.1px);
+            
+            /* Use mix-blend-mode */
+            mix-blend-mode: screen;
+            
+            /* Try CSS masks */
+            -webkit-mask: linear-gradient(45deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.9) 100%);
+        }
+    </style>
+</head>
+<body class="stealth-mode">
+    <button class="close-btn" onclick="window.close()">×</button>
+    <div class="content">
+        <div>HELLO WORLD</div>
+        <div class="subtitle">Stealth Test v2</div>
+    </div>
+    
+    <script>
+        console.log('Advanced overlay window loaded');
+        
+        // Try to detect if we're being screen captured
+        let isLikelyBeingCaptured = false;
+        
+        // Monitor for screen capture APIs being used
+        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+            console.log('Screen capture API detected in browser');
+        }
+        
+        // Alternative rendering approach
+        function alternativeRender() {
+            const content = document.querySelector('.content');
+            if (content) {
+                // Try rendering techniques that might avoid capture
+                content.style.transform = 'rotate(0.1deg)';
+                
+                // Use canvas overlay instead of CSS
+                const canvas = document.createElement('canvas');
+                canvas.width = 200;
+                canvas.height = 50;
+                canvas.style.position = 'absolute';
+                canvas.style.top = '25px';
+                canvas.style.left = '50px';
+                canvas.style.opacity = '0.8';
+                
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#00ff00';
+                ctx.font = '14px Courier';
+                ctx.fillText('HELLO WORLD', 10, 25);
+                
+                // Replace text with canvas
+                // document.body.appendChild(canvas);
+            }
+        }
+        
+        // Delay alternative rendering
+        setTimeout(alternativeRender, 1000);
+        
+        // Enhanced dragging with screen capture detection
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            if (confirm('Close overlay window?')) {
+                window.close();
+            }
+        });
+        
+        // Double-click to toggle stealth mode
+        document.addEventListener('dblclick', () => {
+            document.body.classList.toggle('stealth-mode');
+            console.log('Stealth mode toggled');
+        });
+        
+        // Monitor for potential screen capture detection
+        setInterval(() => {
+            // Check if window properties suggest screen capture
+            const isMinimized = document.hidden;
+            const isVisible = document.visibilityState === 'visible';
+            
+            if (!isVisible && !isMinimized) {
+                console.log('Potential screen capture detected');
+                isLikelyBeingCaptured = true;
+                
+                // Could hide or modify content when being captured
+                document.body.style.opacity = '0.1';
+            } else {
+                if (isLikelyBeingCaptured) {
+                    document.body.style.opacity = '1';
+                    isLikelyBeingCaptured = false;
+                }
+            }
+        }, 500);
+    </script>
+</body>
+</html>

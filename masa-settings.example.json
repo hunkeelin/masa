@@ -1,0 +1,6 @@
+{
+  "apiKey": "your-openai-api-key-here",
+  "claudeApiKey": "your-claude-api-key-here", 
+  "model": "gpt-3.5-turbo",
+  "provider": "openai"
+}
