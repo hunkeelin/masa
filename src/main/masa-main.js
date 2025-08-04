@@ -14,7 +14,8 @@ let currentSettings = {
   claudeApiKey: process.env.ANTHROPIC_API_KEY || '',
   model: 'gpt-3.5-turbo', // Default to GPT-3.5 Turbo
   provider: 'openai', // Default to OpenAI
-  hotkey: 'Ctrl+Shift+J' // Default hotkey in user-friendly format
+  hotkey: 'Ctrl+Shift+J', // Default hotkey in user-friendly format
+  language: 'python' // Default programming language for solutions
 };
 
 // Initialize AI clients
@@ -298,12 +299,23 @@ async function getSolutionFromClaude(problemText) {
 Extracted problem text:
 ${problemText}
 
-Please provide:
+Please provide a solution specifically in ${currentSettings.language.toUpperCase()} with the following requirements:
+
 1. **Problem Understanding**: Brief explanation of what the problem is asking
 2. **Solution Approach**: Key algorithm/strategy to solve it
-3. **Code Solutions**: Clean, working code in both Python and JavaScript
-4. **Complexity Analysis**: Time and space complexity with explanations
+3. **Clean Code Solution**: 
+   - Use descriptive, meaningful variable names (no single letters like 'i', 'j', 'x', 'y')
+   - Add comprehensive comments explaining each step
+   - Use clear function/method names that describe what they do
+   - Make the code as readable and self-documenting as possible
+4. **Complexity Analysis**: Time and space complexity with detailed explanations
 5. **Key Insights**: Important patterns or techniques used
+
+Code Style Requirements:
+- Variable names should be descriptive (e.g., 'leftPointer' instead of 'l', 'targetSum' instead of 's')
+- Add inline comments explaining the logic
+- Use meaningful function names
+- Structure the code for maximum readability
 
 Format your response clearly with markdown formatting for easy reading.`;
 
@@ -358,11 +370,23 @@ Please analyze it and provide a solution.
 Extracted text:
 ${problemText}
 
-Please provide:
-1. A brief explanation of the problem
-2. A clean, working solution in Python and JavaScript
-3. Time and space complexity
-4. Key insights
+Please provide a solution specifically in ${currentSettings.language.toUpperCase()} with these requirements:
+
+1. **Problem Explanation**: Brief explanation of what the problem is asking
+2. **Clean, Human-Readable Code Solution**: 
+   - Use descriptive, meaningful variable names (avoid single letters like 'i', 'j', 'x', 'y')
+   - Add comprehensive comments explaining each step and logic
+   - Use clear function/method names that describe their purpose
+   - Make the code as readable and self-documenting as possible
+3. **Time and Space Complexity**: Detailed analysis with explanations
+4. **Key Insights**: Important patterns or techniques used
+
+Code Style Requirements:
+- Variable names must be descriptive (e.g., 'currentIndex' instead of 'i', 'targetValue' instead of 'x')
+- Add inline comments explaining the reasoning behind each step
+- Use meaningful function names that clearly indicate what they do
+- Structure the code for maximum readability and maintainability
+- Include comments for complex logic or algorithms
 
 Format your response in a structured way that's easy to read.
 `;
@@ -565,6 +589,7 @@ ipcMain.on('save-settings', (event, settings) => {
   currentSettings.claudeApiKey = settings.claudeApiKey || currentSettings.claudeApiKey;
   currentSettings.model = settings.model;
   currentSettings.provider = settings.provider || 'openai';
+  currentSettings.language = settings.language || 'python';
   
   // Update hotkey if provided
   if (settings.hotkey && settings.hotkey !== currentSettings.hotkey) {

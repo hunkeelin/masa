@@ -36,6 +36,7 @@
             font-weight: 600;
             color: #00ff64;
             flex: 1;
+            text-align: center;
         }
         
         .controls {
@@ -383,6 +384,25 @@
             </div>
             
             <div class="setting-group">
+                <label for="language-select">Solution Language:</label>
+                <select id="language-select">
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="java">Java</option>
+                    <option value="cpp">C++</option>
+                    <option value="csharp">C#</option>
+                    <option value="go">Go</option>
+                    <option value="rust">Rust</option>
+                    <option value="typescript">TypeScript</option>
+                    <option value="php">PHP</option>
+                    <option value="ruby">Ruby</option>
+                </select>
+                <small style="color: #888; font-size: 9px; margin-top: 5px; display: block;">
+                    🔧 Choose your preferred programming language for solutions
+                </small>
+            </div>
+            
+            <div class="setting-group">
                 <label for="hotkey-input">Global Hotkey:</label>
                 <input type="text" id="hotkey-input" placeholder="Ctrl+Shift+J" readonly onclick="recordHotkey()" />
                 <small style="color: #888; font-size: 9px;">Click to record a new hotkey combination</small>
@@ -536,6 +556,7 @@
             const openaiApiKey = document.getElementById('api-key').value.trim();
             const model = document.getElementById('model-select').value;
             const hotkey = document.getElementById('hotkey-input').value.trim();
+            const language = document.getElementById('language-select').value;
             
             let apiKey = provider === 'claude' ? claudeApiKey : openaiApiKey;
             
@@ -557,6 +578,7 @@
                 provider,
                 model,
                 hotkey: hotkey || 'Ctrl+Shift+J',
+                language: language,
                 [provider === 'claude' ? 'claudeApiKey' : 'apiKey']: apiKey
             };
             
@@ -724,6 +746,11 @@
             // Set model
             if (settings.model) {
                 document.getElementById('model-select').value = settings.model;
+            }
+            
+            // Set language
+            if (settings.language) {
+                document.getElementById('language-select').value = settings.language;
             }
             
             // Set hotkey and update all displays
