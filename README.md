@@ -1,187 +1,218 @@
-# Masa - Your Cute AI Coding Companion 🐱
+# Masa: Open Source AI Coding Assistant
 
-A cute pet project that does what [Cluely](https://cluely.com/) does, but it's **100% open source and free**! 
+Masa is an open source desktop application that provides AI-powered coding assistance, inspired by [Cluely](https://cluely.com/) but fully free and transparent. Masa leverages advanced AI models to analyze coding problems directly from your screen and deliver structured solutions, code samples, and key insights.
 
-This stealth desktop application captures your screen, detects coding problems, and provides AI-powered solutions - all while being invisible to screen capture and recording. Think of it as your adorable coding buddy that helps you learn and practice without breaking the bank.
+## Features
 
-## 🌟 Why Masa?
+- **Screen Capture & OCR**: Capture coding problems from your screen and extract text using OCR.
+- **AI-Powered Solutions**: Get detailed explanations, code samples (Python/JavaScript), and complexity analysis using OpenAI or Claude models.
+- **Customizable Hotkey**: Default global hotkey (`Ctrl+Shift+J`) to trigger analysis, with the option to rebind.
+- **Cross-Platform Overlay**: Stealth overlay window designed for minimal distraction and screen sharing compatibility.
+- **No Vendor Lock-in**: Fully open source, with no proprietary restrictions.
 
-Ever heard of [Cluely](https://cluely.com/)? It's a pretty cool service that helps with coding interviews! But here's the thing - this cute little project does the same thing, except:
+## How It Works
 
-- 🆓 **Completely FREE** (just bring your own OpenAI API key!)
-- 🔓 **Open Source** - peek under the hood, modify, contribute!
-- 🐾 **Pet Project Vibes** - made with love, not corporate demands
-- 🎨 **Customizable** - make it yours however you want!
+1. **Capture**: Use the global hotkey or overlay button to capture the current screen.
+2. **Analyze**: Masa extracts and analyzes coding problems using OCR and AI.
+3. **Assist**: Receive a structured solution, including code, explanation, and complexity analysis.
 
-It's like having a friendly coding mentor that lives in your computer and helps you learn - without the subscription fees! Perfect for students, learners, and anyone who wants to understand how these tools work.
+## Getting Started
 
-## 🚀 Features
+### Quick Start (for experienced developers)
 
-### Core Functionality
-- **Screen Capture & OCR**: Captures and reads text from your screen using Tesseract.js
-- **LeetCode Detection**: Automatically identifies coding problems and challenges
-- **AI Solutions**: Uses OpenAI GPT-4 to provide detailed solutions with explanations
-- **Global Hotkey**: Customizable hotkey (default: `Ctrl+Shift+J`) to trigger analysis from anywhere
-- **Stealth Mode**: Invisible to screen sharing and recording (Google Meet, Zoom, etc.)
-
-### UI Features
-- **Draggable overlay** window that stays on top
-- **Real-time status** updates during processing
-- **Clean solution display** with syntax highlighting
-- **Multiple window modes**: Basic, Advanced, and Masa modes
-
-## 🎯 How to Use
-
-### 1. Setup
 ```bash
-# Install dependencies
+# Clone and setup
+git clone git@github.com:hunkeelin/masa.git
+cd masa
 npm install
 
-# Download Tesseract language data for English
-curl -L https://github.com/tesseract-ocr/tessdata/raw/main/eng.traineddata -o eng.traineddata
+# Install Tesseract (macOS)
+brew install tesseract
 
-# Optional: Set environment variables (or use the UI)
-cp .env.example .env
-# Edit .env and add your API keys (optional - can be set in UI)
+# Set your API key and run
+export OPENAI_API_KEY=your-key-here
+npm run masa
 ```
 
-### 2. Run Masa
+### Detailed Installation
+
+### Prerequisites
+
+Before installation, ensure you have the following installed:
+
+- **Node.js** (v16 or higher) - [Download from nodejs.org](https://nodejs.org/)
+- **npm** (comes with Node.js)
+- **Python** (required for native module compilation)
+  - macOS: Install via Homebrew: `brew install python`
+  - Windows: Download from [python.org](https://python.org/) or use Microsoft Store
+  - Linux: Use your package manager (e.g., `apt install python3`)
+
+> **Note**: This is a Node.js/Electron application, not a Python project. While Python is needed for compiling native modules, you don't need to create a Python virtual environment. If you want to isolate Node.js versions, consider using [nvm](https://github.com/nvm-sh/nvm) (Node Version Manager) instead.
+
+### Installation Steps
+
+1. **Clone the repository**
+   ```bash
+   git clone git@github.com:hunkeelin/masa.git
+   cd masa
+   ```
+
+2. **Install Node.js dependencies**
+   ```bash
+   # Install all required packages
+   npm install
+   
+   # If you encounter native module compilation issues, try:
+   npm install --build-from-source
+   ```
+
+3. **Install system dependencies**
+
+   **On macOS:**
+   ```bash
+   # Install Tesseract for OCR
+   brew install tesseract
+   
+   # Install Xcode command line tools (if not already installed)
+   xcode-select --install
+   ```
+
+   **On Windows:**
+   ```bash
+   # Install via chocolatey (recommended)
+   choco install tesseract
+   
+   # Or download from: https://github.com/UB-Mannheim/tesseract/wiki
+   ```
+
+   **On Linux (Ubuntu/Debian):**
+   ```bash
+   # Install Tesseract and build tools
+   sudo apt update
+   sudo apt install tesseract-ocr tesseract-ocr-eng build-essential
+   ```
+
+4. **Set up your API keys**
+   
+   Masa requires an AI API key to function. Choose your preferred provider:
+   
+   **Getting API Keys:**
+   - **OpenAI**: Visit [platform.openai.com](https://platform.openai.com/api-keys) to create an API key
+   - **Claude (Anthropic)**: Visit [console.anthropic.com](https://console.anthropic.com/) to get your API key
+   
+   **Configuration Methods:**
+   
+   **Method A: Environment Variables (Recommended)**
+   ```bash
+   # Create a .env file in the project root
+   cp .env.example .env
+   
+   # Edit .env and add your API keys
+   export OPENAI_API_KEY=your-openai-key-here
+   export ANTHROPIC_API_KEY=your-claude-key-here
+   ```
+   
+   **Method B: Runtime Configuration**
+   - Start the application and click the settings gear (⚙️)
+   - Enter your API key in the settings panel
+   - Keys are stored in memory only for security
+
+5. **Verify installation**
+   ```bash
+   # Test the installation
+   npm run masa
+   ```
+
+   If successful, you should see the Masa overlay window appear.
+
+### Troubleshooting
+
+**Common Issues:**
+
+- **"Failed to compile native modules"**: Install Python and build tools for your platform
+- **"Tesseract not found"**: Ensure Tesseract is installed and in your PATH
+- **"Permission denied on macOS"**: Grant screen recording permissions in System Preferences > Security & Privacy
+- **"API key invalid"**: Verify your API key in the settings panel using the "Test API Key" button
+
+### Running Modes
+
+Masa offers different running modes for various use cases:
+
 ```bash
-# Start the full AI-powered version
+# Full AI-powered assistant (recommended)
 npm run masa
 
-# Or start basic stealth demo
+# Basic stealth overlay demo
 npm run stealth
+
+# Simple overlay test
+npm start
+
+# Development mode with logging
+npm run dev
 ```
 
-### 3. Usage
-1. **Open any coding platform** (LeetCode, HackerRank, etc.)
-2. **Press your configured hotkey** (default: `Ctrl+Shift+J`) to capture and analyze the screen
-3. **View the solution** in the overlay window
-4. **Drag the window** by clicking the title bar
-5. **Hide/show** using the minimize button
+### Development Setup
 
-## 🧠 How It Works
+For developers who want to contribute or modify Masa:
 
-### Screen Capture Exclusion
-The application uses several techniques to avoid detection:
-
-1. **Window Layer Manipulation**:
-   - Transparent background with overlay content
-   - Custom window levels and z-ordering
-   - Platform-specific window flags
-
-2. **macOS Specific**:
-   - `setContentProtection(true)` for screen recording exclusion
-   - `vibrancy` effects and special window types
-   - Custom window levels (`floating`, `pop-up-menu`)
-
-3. **Content Analysis Pipeline**:
-   ```
-   Screen Capture → Image Enhancement → OCR → Problem Detection → AI Analysis → Solution Display
+1. **Enable development mode**
+   ```bash
+   # Run with detailed logging
+   npm run dev
    ```
 
-### AI Processing
-- **Text Extraction**: Uses Tesseract.js for OCR
-- **Problem Detection**: Pattern matching for coding keywords
-- **Solution Generation**: OpenAI GPT-4 provides detailed solutions
-- **Fallback Solutions**: Built-in solutions for common problems
+2. **Build native modules** (if needed)
+   ```bash
+   npm run build-native
+   ```
 
-## 🔒 Security & Privacy
+3. **Code structure**
+   ```
+   ├── masa-main.js         # Main AI application
+   ├── masa-overlay.html    # AI assistant UI
+   ├── main-stealth.js      # Stealth overlay demo
+   ├── main.js              # Basic overlay test
+   └── native-helper.js     # Platform-specific native functions
+   ```
 
-### API Key Protection
-- **Memory-Only Storage**: API keys are never saved to disk
-- **Environment Variables**: Load keys from `.env` file (optional)
-- **UI Configuration**: Set keys through secure interface
-- **No Persistent Files**: No sensitive data stored permanently
+## Configuration
 
-### Data Privacy
-- **Local Processing**: All screen capture and OCR happens locally
-- **Minimal Data Transfer**: Only extracted text sent to AI APIs
-- **No Data Retention**: No conversation history or personal data stored
+- **Hotkey**: The default hotkey is `Ctrl+Shift+J`. You can change this in the settings panel.
+- **API Providers**: Switch between OpenAI and Claude models as needed.
+- **Overlay**: The overlay window can be repositioned and minimized as required.
 
-## 🎮 Controls
+## Usage
 
-| Action | Method |
-|--------|--------|
-| **Analyze Screen** | `Customizable` (default: `Ctrl+Shift+J`) |
-| **Move Window** | Drag title bar |
-| **Hide Window** | Click minimize (−) button |
-| **Close Window** | Click close (×) button or `Esc` |
-| **Re-analyze** | Click 🔍 button |
+1. **Start Masa**: Run `npm run masa` to launch the application
+2. **Position the overlay**: Drag the window to your preferred location
+3. **Analyze problems**: 
+   - Press `Ctrl+Shift+J` (or your configured hotkey) to capture and analyze your screen
+   - Or click the 🔍 button in the overlay
+4. **View solutions**: Solutions appear in the overlay with code examples and explanations
+5. **Manage settings**: Click ⚙️ to configure API keys, models, and hotkeys
 
-## 🛠 Available Scripts
+### Expected Costs
 
-```bash
-npm start          # Basic demo with "Hello World"
-npm run stealth    # Enhanced stealth demo
-npm run masa       # Full AI-powered Masa
-npm run dev        # Development mode with logging
-```
+API usage costs are typically very low for casual use:
 
-## 📋 Requirements
+- **OpenAI GPT-3.5 Turbo**: ~$0.003 per analysis (recommended for cost-effectiveness)
+- **OpenAI GPT-4**: ~$0.03-0.06 per analysis (higher quality)
+- **Claude 3.5 Sonnet**: ~$0.024 per analysis (premium quality)
 
-- **Node.js** 16+ 
-- **Electron** 28+
-- **OpenAI API Key** (for AI solutions)
-- **macOS/Windows** (Linux support experimental)
+Example: 100 coding problems analyzed with GPT-3.5 would cost approximately $0.30.
 
-## 🔧 Configuration
+## Security
 
-### Environment Variables (.env)
-```env
-OPENAI_API_KEY=your-actual-api-key-here
-OPENAI_MODEL=gpt-4  # Optional: change AI model
-CODING_KEYWORD_THRESHOLD=3  # Sensitivity for problem detection
-```
+- API keys are never written to disk and are only stored in memory during runtime.
+- Sensitive files such as `.env` are excluded from version control.
 
-### Supported Platforms
-- ✅ **macOS**: Full stealth support with content protection
-- ✅ **Windows**: Stealth support with toolbar window type
-- ⚠️ **Linux**: Basic functionality (stealth features limited)
+## Platform Support
 
-## 🧪 Testing Screen Capture Exclusion
+- **macOS**: Uses advanced window layering and vibrancy for stealth overlays.
+- **Windows**: Toolbar mode and exclusion flags for screen capture compatibility.
+- **Linux**: Standard overlay support.
 
-1. **Start Masa**: `npm run masa`
-2. **Open video call**: Google Meet, Zoom, Teams, etc.
-3. **Start screen sharing**
-4. **Trigger analysis**: Press your configured hotkey (default: `Ctrl+Shift+J`)
-5. **Check if overlay is visible** to other participants
+## License
 
-## ⚠️ Important Notes
-
-- **Educational/Research Purpose**: This demonstrates screen capture exclusion techniques
-- **API Key Required**: You need an OpenAI API key for AI solutions
-- **Platform Differences**: Stealth effectiveness varies by platform and capture method
-- **Permissions**: May require screen recording permissions on macOS
-
-## 🎨 Architecture
-
-```
-├── main.js              # Basic demo
-├── main-stealth.js      # Enhanced stealth demo  
-├── masa-main.js         # Full AI application
-├── masa-overlay.html    # AI assistant UI
-├── stealth-overlay.html # Simple stealth overlay
-└── overlay.html         # Basic overlay
-```
-
-## 🚨 Legal & Ethical Use
-
-This adorable pet project is intended for:
-- **Educational purposes** and learning how these systems work
-- **Personal coding practice** and study sessions
-- **Research into screen capture technologies**
-- **Understanding AI-assisted coding** in a transparent way
-- **Having fun with open source alternatives** to paid services
-
-**Not intended for:**
-- Cheating in actual interviews or exams
-- Violating terms of service of coding platforms  
-- Any unethical or unauthorized use
-
-Remember: this is a learning tool made with love! Use it responsibly to **learn and grow**, not to cheat. The goal is to understand concepts better, just like having a study buddy. 🤝
-
----
-
-*Made with ❤️ as a free, open-source alternative to expensive coding assistance services. Because learning should be accessible to everyone!*
+This project is licensed under the MIT License.
