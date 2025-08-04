@@ -301,12 +301,12 @@
             <button class="btn btn-settings" onclick="toggleSettings()" title="Settings">⚙️</button>
             <button class="btn btn-analyze" onclick="triggerAnalysis()" title="Analyze Screen">🔍</button>
             <button class="btn btn-minimize" onclick="hideOverlay()" title="Hide">−</button>
-            <button class="btn btn-close" onclick="window.close()" title="Close">×</button>
+            <button class="btn btn-close" onclick="closeApplication()" title="Close">×</button>
         </div>
     </div>
     
     <div class="content">
-        <div id="status" class="status">Ready - Press your configured hotkey to analyze screen</div>
+        <div id="status" class="status">Ready - Press Ctrl+Shift+J to analyze screen</div>
         
         <div id="welcome" class="welcome">
             <h2>AI Coding Assistant</h2>
@@ -374,7 +374,7 @@
             
             <div class="setting-group">
                 <label for="hotkey-input">Global Hotkey:</label>
-                <input type="text" id="hotkey-input" placeholder="CommandOrControl+Shift+J" readonly onclick="recordHotkey()" />
+                <input type="text" id="hotkey-input" placeholder="Ctrl+Shift+J" readonly onclick="recordHotkey()" />
                 <small style="color: #888; font-size: 9px;">Click to record a new hotkey combination</small>
                 <div id="hotkey-status" style="font-size: 9px; margin-top: 4px; color: #888;"></div>
             </div>
@@ -453,6 +453,10 @@
             ipcRenderer.send('show-overlay');
         }
         
+        function closeApplication() {
+            ipcRenderer.send('close-application');
+        }
+        
         function toggleSettings() {
             const welcome = document.getElementById('welcome');
             const solutionContainer = document.getElementById('solution-container');
@@ -508,6 +512,14 @@
             }
         }
         
+        function updateHotkeyDisplay(hotkey) {
+            const displayFormat = displayHotkey(hotkey);
+            // Update all hotkey displays
+            document.getElementById('hotkey-display').textContent = displayFormat;
+            document.getElementById('hotkey-hint').textContent = displayFormat;
+            document.getElementById('status').textContent = `Ready - Press ${displayFormat} to analyze screen`;
+        }
+        
         function saveSettings() {
             const provider = document.getElementById('provider-select').value;
             const claudeApiKey = document.getElementById('claude-api-key').value.trim();
@@ -534,12 +546,15 @@
             const settings = {
                 provider,
                 model,
-                hotkey: hotkey || 'CommandOrControl+Shift+J',
+                hotkey: hotkey || 'Ctrl+Shift+J',
                 [provider === 'claude' ? 'claudeApiKey' : 'apiKey']: apiKey
             };
             
             ipcRenderer.send('save-settings', settings);
             updateApiStatus(`${provider === 'claude' ? 'Claude' : 'OpenAI'} settings saved successfully`, 'success');
+            
+            // Update hotkey display immediately
+            updateHotkeyDisplay(settings.hotkey);
         }
         
         function testApiKey() {
@@ -603,9 +618,16 @@
             
             keys.forEach(key => {
                 if (['Control', 'Meta', 'Alt', 'Shift'].includes(key)) {
-                    if (key === 'Control') modifiers.push('CommandOrControl');
-                    else if (key === 'Meta') modifiers.push('CommandOrControl');
-                    else modifiers.push(key);
+                    if (key === 'Control') {
+                        // Keep Control as Control - don't convert to CommandOrControl
+                        // This preserves the distinction between Ctrl and Cmd on macOS
+                        modifiers.push('Ctrl');
+                    } else if (key === 'Meta') {
+                        // Meta key (Cmd on macOS) should use CommandOrControl for cross-platform compatibility
+                        modifiers.push('CommandOrControl');
+                    } else {
+                        modifiers.push(key);
+                    }
                 } else {
                     regularKeys.push(key.toUpperCase());
                 }
@@ -614,11 +636,10 @@
             return [...new Set(modifiers)].concat(regularKeys).join('+');
         }
         
-        function displayHotkey(electronFormat) {
-            // Convert Electron format to display format
-            return electronFormat
-                .replace('CommandOrControl', process.platform === 'darwin' ? 'Cmd' : 'Ctrl')
-                .replace(/\+/g, ' + ');
+        function displayHotkey(hotkey) {
+            // Always display Ctrl+Shift+J format regardless of platform
+            // Don't convert Ctrl to Cmd on macOS for consistency
+            return hotkey.replace(/\+/g, ' + ');
         }
         
         // Global key event listener for hotkey recording
@@ -653,9 +674,12 @@
                     const status = document.getElementById('hotkey-status');
                     
                     input.value = formatted;
-                    input.placeholder = 'CommandOrControl+Shift+J';
+                    input.placeholder = 'Ctrl+Shift+J';
                     status.textContent = `✅ Hotkey set to: ${displayHotkey(formatted)}`;
                     status.style.color = '#28ca42';
+                    
+                    // Update the hotkey display immediately
+                    updateHotkeyDisplay(formatted);
                     
                     isRecordingHotkey = false;
                 }
@@ -692,16 +716,10 @@
                 document.getElementById('model-select').value = settings.model;
             }
             
-            // Set hotkey
-            if (settings.hotkey) {
-                document.getElementById('hotkey-input').value = settings.hotkey;
-                // Update display elements
-                const displayFormat = displayHotkey(settings.hotkey);
-                document.getElementById('hotkey-display').textContent = displayFormat;
-                document.getElementById('hotkey-hint').textContent = displayFormat;
-                // Update status message
-                document.getElementById('status').textContent = `Ready - Press ${displayFormat} to analyze screen`;
-            }
+            // Set hotkey and update all displays
+            const currentHotkey = settings.hotkey || 'Ctrl+Shift+J';
+            document.getElementById('hotkey-input').value = currentHotkey;
+            updateHotkeyDisplay(currentHotkey);
             
             // Update status
             const hasKey = (settings.provider === 'claude' && settings.claudeApiKey) || 
@@ -733,6 +751,14 @@
         });
         
         console.log('Masa overlay loaded');
+        
+        // Initialize default hotkey display on load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHotkeyDisplay('Ctrl+Shift+J');
+        });
+        
+        // Also run immediately in case DOM is already loaded
+        updateHotkeyDisplay('Ctrl+Shift+J');
     </script>
 </body>
 </html>

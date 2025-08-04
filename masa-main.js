@@ -14,7 +14,7 @@ let currentSettings = {
   claudeApiKey: process.env.ANTHROPIC_API_KEY || '',
   model: 'gpt-3.5-turbo', // Default to GPT-3.5 Turbo
   provider: 'openai', // Default to OpenAI
-  hotkey: 'CommandOrControl+Shift+J' // Default hotkey
+  hotkey: 'Ctrl+Shift+J' // Default hotkey in user-friendly format
 };
 
 // Initialize AI clients
@@ -46,8 +46,17 @@ function loadSettings() {
 
 // Settings are kept in memory only - no file saving
 function saveSettings() {
-  // Settings are only kept in memory for security
-  // No persistent storage of API keys
+  // API keys are only kept in memory for security
+  // No persistent storage of any data
+}
+
+// Convert user-friendly hotkey to Electron format
+function convertHotkeyToElectron(hotkey) {
+  return hotkey
+    .replace(/\bCtrl\b/g, 'Control') // Map Ctrl specifically to Control (not CommandOrControl)
+    .replace(/\bCmd\b/g, 'CommandOrControl') // Map Cmd to CommandOrControl for cross-platform
+    .replace(/\s/g, '') // Remove spaces
+    .replace(/\+/g, '+'); // Ensure proper format
 }
 
 // Register global hotkey dynamically
@@ -55,8 +64,11 @@ function registerHotkey() {
   // Unregister existing hotkey
   globalShortcut.unregisterAll();
   
+  // Convert user-friendly format to Electron format
+  const electronHotkey = convertHotkeyToElectron(currentSettings.hotkey);
+  
   // Register new hotkey
-  const registered = globalShortcut.register(currentSettings.hotkey, () => {
+  const registered = globalShortcut.register(electronHotkey, () => {
     console.log(`Hotkey triggered: ${currentSettings.hotkey}`);
     
     if (overlayWindow) {
@@ -70,7 +82,7 @@ function registerHotkey() {
   });
   
   if (!registered) {
-    console.log('Global shortcut registration failed for:', currentSettings.hotkey);
+    console.log('Global shortcut registration failed for:', currentSettings.hotkey, '(', electronHotkey, ')');
     return false;
   }
   
@@ -123,6 +135,13 @@ function createMasaOverlay() {
   });
 
   overlayWindow.loadFile('masa-overlay.html');
+
+  // Handle window close event - terminate the entire application
+  overlayWindow.on('closed', () => {
+    console.log('Overlay window closed, terminating application...');
+    globalShortcut.unregisterAll();
+    app.quit();
+  });
 
   // Platform-specific exclusion setup
   if (process.platform === 'darwin') {
@@ -531,6 +550,12 @@ ipcMain.on('show-overlay', () => {
   }
 });
 
+ipcMain.on('close-application', () => {
+  console.log('Close application requested via IPC');
+  globalShortcut.unregisterAll();
+  app.quit();
+});
+
 ipcMain.on('get-settings', (event) => {
   event.reply('settings-loaded', currentSettings);
 });
@@ -603,10 +628,10 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
+  // Always quit the application when all windows are closed
+  // This makes sense for a utility app like Masa
   globalShortcut.unregisterAll();
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  app.quit();
 });
 
 app.on('activate', () => {
