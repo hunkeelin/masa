@@ -4,6 +4,7 @@ const Tesseract = require('tesseract.js');
 const Jimp = require('jimp');
 const OpenAI = require('openai');
 const Anthropic = require('@anthropic-ai/sdk');
+const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -12,8 +13,9 @@ let isProcessing = false;
 let currentSettings = {
   apiKey: process.env.OPENAI_API_KEY || '',
   claudeApiKey: process.env.ANTHROPIC_API_KEY || '',
-  model: 'gpt-3.5-turbo', // Default to GPT-3.5 Turbo
-  provider: 'openai', // Default to OpenAI
+  geminiApiKey: process.env.GEMINI_API_KEY || '',
+  model: 'gemini-auto', // Default to Gemini auto-selection
+  provider: 'gemini', // Default to Gemini (free option)
   hotkey: 'Ctrl+Shift+J', // Default hotkey in user-friendly format
   language: 'python' // Default programming language for solutions
 };
@@ -273,8 +275,11 @@ function detectCodingProblem(text) {
 async function getSolutionFromAI(problemText) {
   try {
     const isClaudeModel = currentSettings.model.includes('claude') || currentSettings.provider === 'claude';
+    const isGeminiModel = currentSettings.provider === 'gemini';
     
-    if (isClaudeModel) {
+    if (isGeminiModel) {
+      return await getSolutionFromGemini(problemText);
+    } else if (isClaudeModel) {
       return await getSolutionFromClaude(problemText);
     } else {
       return await getSolutionFromOpenAI(problemText);
@@ -420,6 +425,59 @@ Format your response in a structured way that's easy to read.
       errorMessage = 'Rate limit exceeded. Please wait and try again.';
     } else {
       errorMessage = `API Error: ${error.message}`;
+    }
+    
+    throw new Error(errorMessage);
+  }
+}
+
+async function getSolutionFromGemini(problemText) {
+  try {
+    if (!currentSettings.geminiApiKey || currentSettings.geminiApiKey === 'your-gemini-api-key-here') {
+      throw new Error('Gemini API key not configured. Please set your Gemini API key in settings.');
+    }
+
+    // Use the Python CLI to call Gemini
+    const { promisify } = require('util');
+    const execAsync = promisify(require('child_process').exec);
+    
+    const command = `python3 "${path.join(__dirname, '../utils/gemini-cli.py')}" --prompt "${problemText.replace(/"/g, '\\"')}" --language "${currentSettings.language}"`;
+    
+    // Set the API key as environment variable for the subprocess
+    const env = { ...process.env, GEMINI_API_KEY: currentSettings.geminiApiKey };
+    
+    const { stdout, stderr } = await execAsync(command, { env, timeout: 30000 });
+    
+    if (stderr) {
+      console.warn('Gemini CLI stderr:', stderr);
+    }
+    
+    const result = JSON.parse(stdout);
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Gemini API error');
+    }
+
+    return {
+      solution: result.content,
+      originalText: problemText.substring(0, 300),
+      provider: 'Gemini',
+      model: result.model || 'gemini-1.5-flash'
+    };
+    
+  } catch (error) {
+    console.error('Gemini API error:', error);
+    
+    let errorMessage = 'Gemini API Error occurred';
+    
+    if (error.message.includes('API key')) {
+      errorMessage = 'Invalid or missing Gemini API key. Please configure in settings (⚙️).';
+    } else if (error.message.includes('ENOENT') || error.message.includes('python3')) {
+      errorMessage = 'Python3 or Gemini CLI not found. Please install dependencies.';
+    } else if (error.message.includes('timeout')) {
+      errorMessage = 'Gemini API timeout. Please try again.';
+    } else {
+      errorMessage = `Gemini Error: ${error.message}`;
     }
     
     throw new Error(errorMessage);
@@ -587,6 +645,7 @@ ipcMain.on('get-settings', (event) => {
 ipcMain.on('save-settings', (event, settings) => {
   currentSettings.apiKey = settings.apiKey || currentSettings.apiKey;
   currentSettings.claudeApiKey = settings.claudeApiKey || currentSettings.claudeApiKey;
+  currentSettings.geminiApiKey = settings.geminiApiKey || currentSettings.geminiApiKey;
   currentSettings.model = settings.model;
   currentSettings.provider = settings.provider || 'openai';
   currentSettings.language = settings.language || 'python';
@@ -619,6 +678,22 @@ ipcMain.on('test-api-key', async (event, testData) => {
       });
       
       event.reply('api-test-result', { success: true, provider: 'Claude' });
+    } else if (provider === 'gemini') {
+      // Test Gemini using the CLI
+      const { promisify } = require('util');
+      const execAsync = promisify(require('child_process').exec);
+      
+      const command = `python3 "${path.join(__dirname, '../utils/gemini-cli.py')}" --test`;
+      const env = { ...process.env, GEMINI_API_KEY: apiKey };
+      
+      const { stdout } = await execAsync(command, { env, timeout: 10000 });
+      const result = JSON.parse(stdout);
+      
+      if (result.success) {
+        event.reply('api-test-result', { success: true, provider: 'Gemini' });
+      } else {
+        throw new Error(result.error || 'Gemini test failed');
+      }
     } else {
       const testOpenAI = new OpenAI({ apiKey });
       

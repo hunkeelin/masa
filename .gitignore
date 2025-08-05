@@ -139,3 +139,16 @@ Thumbs.db
 
 # Tesseract language data files (auto-downloaded by tesseract.js)
 *.traineddata
+
+# Python dependencies for Gemini CLI
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+.venv
+venv/
+.env

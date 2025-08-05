@@ -342,7 +342,8 @@
                 <div style="color: #888; font-size: 9px; line-height: 1.4;">
                     <strong>Option 1:</strong> Set environment variables (recommended):<br/>
                     <code>export OPENAI_API_KEY=your-key</code><br/>
-                    <code>export ANTHROPIC_API_KEY=your-key</code><br/><br/>
+                    <code>export ANTHROPIC_API_KEY=your-key</code><br/>
+                    <code>export GEMINI_API_KEY=your-key</code><br/><br/>
                     <strong>Option 2:</strong> Enter API keys below (memory only - never saved to disk)
                 </div>
             </div>
@@ -350,11 +351,12 @@
             <div class="setting-group">
                 <label for="provider-select">AI Provider:</label>
                 <select id="provider-select" onchange="toggleApiKeyFields()">
+                    <option value="gemini">Gemini (Google) - FREE ⭐</option>
                     <option value="openai">OpenAI (GPT) - Cost Effective</option>
                     <option value="claude">Claude (Anthropic) - Premium Quality</option>
                 </select>
                 <small style="color: #888; font-size: 9px; margin-top: 5px; display: block;">
-                    💡 OpenAI: ~$0.003 per question | Claude: ~$0.024 per question
+                    💡 OpenAI: ~$0.003 per question | Claude: ~$0.024 per question | Gemini: FREE (60/min, 1000/day)!
                 </small>
             </div>
             
@@ -368,6 +370,12 @@
                 <label for="claude-api-key">Claude API Key:</label>
                 <input type="password" id="claude-api-key" placeholder="sk-ant-..." />
                 <small style="color: #888; font-size: 9px;">Get your key from <a href="#" onclick="openClaudeConsole()" style="color: #00ff64;">console.anthropic.com</a></small>
+            </div>
+            
+            <div class="setting-group" id="gemini-key-group" style="display: none;">
+                <label for="gemini-api-key">Gemini API Key:</label>
+                <input type="password" id="gemini-api-key" placeholder="AIza..." />
+                <small style="color: #888; font-size: 9px;">Get your FREE key from <a href="#" onclick="openGeminiConsole()" style="color: #00ff64;">aistudio.google.com</a></small>
             </div>
             
             <div class="setting-group">
@@ -517,11 +525,16 @@
             const provider = document.getElementById('provider-select').value;
             const claudeGroup = document.getElementById('claude-key-group');
             const openaiGroup = document.getElementById('openai-key-group');
+            const geminiGroup = document.getElementById('gemini-key-group');
             const modelSelect = document.getElementById('model-select');
+            
+            // Hide all groups first
+            claudeGroup.style.display = 'none';
+            openaiGroup.style.display = 'none';
+            geminiGroup.style.display = 'none';
             
             if (provider === 'claude') {
                 claudeGroup.style.display = 'block';
-                openaiGroup.style.display = 'none';
                 // Update model options for Claude
                 modelSelect.innerHTML = `
                     <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Latest) - $3/$15 per 1M tokens</option>
@@ -529,8 +542,13 @@
                     <option value="claude-3-haiku-20240307">Claude 3 Haiku (Fastest) - $0.25/$1.25 per 1M tokens</option>
                     <option value="claude-4-sonnet">Claude 4 Sonnet (Premium) - $5/$25 per 1M tokens</option>
                 `;
+            } else if (provider === 'gemini') {
+                geminiGroup.style.display = 'block';
+                // Update model options for Gemini - automatic selection
+                modelSelect.innerHTML = `
+                    <option value="gemini-auto">Gemini Auto (2.5 Pro → 2.5 Flash fallback) - FREE</option>
+                `;
             } else {
-                claudeGroup.style.display = 'none';
                 openaiGroup.style.display = 'block';
                 // Update model options for OpenAI
                 modelSelect.innerHTML = `
@@ -554,11 +572,19 @@
             const provider = document.getElementById('provider-select').value;
             const claudeApiKey = document.getElementById('claude-api-key').value.trim();
             const openaiApiKey = document.getElementById('api-key').value.trim();
+            const geminiApiKey = document.getElementById('gemini-api-key').value.trim();
             const model = document.getElementById('model-select').value;
             const hotkey = document.getElementById('hotkey-input').value.trim();
             const language = document.getElementById('language-select').value;
             
-            let apiKey = provider === 'claude' ? claudeApiKey : openaiApiKey;
+            let apiKey;
+            if (provider === 'claude') {
+                apiKey = claudeApiKey;
+            } else if (provider === 'gemini') {
+                apiKey = geminiApiKey;
+            } else {
+                apiKey = openaiApiKey;
+            }
             
             if (!apiKey) {
                 updateApiStatus('Please enter an API key', 'error');
@@ -571,6 +597,9 @@
             } else if (provider === 'openai' && !apiKey.startsWith('sk-')) {
                 updateApiStatus('OpenAI API key should start with "sk-"', 'error');
                 return;
+            } else if (provider === 'gemini' && !apiKey.startsWith('AIza')) {
+                updateApiStatus('Gemini API key should start with "AIza"', 'error');
+                return;
             }
             
             // Send to main process
@@ -578,12 +607,21 @@
                 provider,
                 model,
                 hotkey: hotkey || 'Ctrl+Shift+J',
-                language: language,
-                [provider === 'claude' ? 'claudeApiKey' : 'apiKey']: apiKey
+                language: language
             };
             
+            if (provider === 'claude') {
+                settings.claudeApiKey = apiKey;
+            } else if (provider === 'gemini') {
+                settings.geminiApiKey = apiKey;
+            } else {
+                settings.apiKey = apiKey;
+            }
+            
             ipcRenderer.send('save-settings', settings);
-            updateApiStatus(`${provider === 'claude' ? 'Claude' : 'OpenAI'} settings saved successfully`, 'success');
+            
+            const providerName = provider === 'claude' ? 'Claude' : provider === 'gemini' ? 'Gemini' : 'OpenAI';
+            updateApiStatus(`${providerName} settings saved successfully`, 'success');
             
             // Update hotkey display immediately
             updateHotkeyDisplay(settings.hotkey);
@@ -593,16 +631,25 @@
             const provider = document.getElementById('provider-select').value;
             const claudeApiKey = document.getElementById('claude-api-key').value.trim();
             const openaiApiKey = document.getElementById('api-key').value.trim();
+            const geminiApiKey = document.getElementById('gemini-api-key').value.trim();
             const model = document.getElementById('model-select').value;
             
-            let apiKey = provider === 'claude' ? claudeApiKey : openaiApiKey;
+            let apiKey;
+            if (provider === 'claude') {
+                apiKey = claudeApiKey;
+            } else if (provider === 'gemini') {
+                apiKey = geminiApiKey;
+            } else {
+                apiKey = openaiApiKey;
+            }
             
             if (!apiKey) {
                 updateApiStatus('Please enter an API key first', 'error');
                 return;
             }
             
-            updateApiStatus(`Testing ${provider === 'claude' ? 'Claude' : 'OpenAI'} API key...`, 'neutral');
+            const providerName = provider === 'claude' ? 'Claude' : provider === 'gemini' ? 'Gemini' : 'OpenAI';
+            updateApiStatus(`Testing ${providerName} API key...`, 'neutral');
             ipcRenderer.send('test-api-key', { apiKey, provider, model });
         }
         
@@ -612,6 +659,10 @@
         
         function openOpenAIConsole() {
             require('electron').shell.openExternal('https://platform.openai.com/api-keys');
+        }
+        
+        function openGeminiConsole() {
+            require('electron').shell.openExternal('https://aistudio.google.com/app/apikey');
         }
         
         function updateApiStatus(message, type) {
@@ -742,6 +793,9 @@
             if (settings.apiKey) {
                 document.getElementById('api-key').value = settings.apiKey;
             }
+            if (settings.geminiApiKey) {
+                document.getElementById('gemini-api-key').value = settings.geminiApiKey;
+            }
             
             // Set model
             if (settings.model) {
@@ -760,10 +814,13 @@
             
             // Update status
             const hasKey = (settings.provider === 'claude' && settings.claudeApiKey) || 
-                          (settings.provider === 'openai' && settings.apiKey);
+                          (settings.provider === 'openai' && settings.apiKey) ||
+                          (settings.provider === 'gemini' && settings.geminiApiKey);
             
             if (hasKey) {
-                updateApiStatus(`${settings.provider === 'claude' ? 'Claude' : 'OpenAI'} API key configured`, 'success');
+                const providerName = settings.provider === 'claude' ? 'Claude' : 
+                                   settings.provider === 'gemini' ? 'Gemini' : 'OpenAI';
+                updateApiStatus(`${providerName} API key configured`, 'success');
             } else {
                 updateApiStatus('API key not configured', 'neutral');
             }
