@@ -1,14 +1,14 @@
-# Masa: Open Source AI Coding Assistant - 100% FREE
+# Masa: Open Source AI Coding Assistant
 
-Masa is an open source desktop application that provides AI-powered coding assistance, inspired by [Cluely](https://cluely.com/) but **completely free** and transparent. Masa leverages advanced AI models to analyze coding problems directly from your screen and deliver structured solutions, code samples, and key insights.
+Masa is an open source desktop application that provides AI-powered coding assistance, inspired by [Cluely](https://cluely.com/) but with full transparency and no licensing restrictions. Masa leverages advanced AI models to analyze coding problems directly from your screen and deliver structured solutions, code samples, and key insights.
 
-## 🆓 Truly Free AI Assistant
+## Free AI Integration
 
-**Zero Cost Operation**: Masa is now 100% free using Google's Gemini API with generous limits:
-- ✅ **1,000 requests per day** - Free forever
-- ✅ **60 requests per minute** - No throttling for normal use  
-- ✅ **No credit card required** - Get started immediately
-- ✅ **Production-grade AI** - Gemini 2.5 Pro with automatic fallback
+Masa now supports Google's Gemini API as the default provider, offering generous usage limits:
+- 1,000 requests per day
+- 60 requests per minute
+- No credit card required for basic usage
+- Automatic model selection (Gemini 2.5 Pro with fallback to Flash)
 
 ## 🎥 Live Demo
 
@@ -18,9 +18,9 @@ Masa is an open source desktop application that provides AI-powered coding assis
 
 ## Features
 
-- **🆓 100% Free Operation**: Uses Google Gemini API with 1,000 free requests daily - no costs, no limits for normal usage
+- **Cost-Free Operation**: Uses Google Gemini API with generous daily limits suitable for regular development work
 - **Screen Capture & OCR**: Capture coding problems from your screen and extract text using OCR
-- **AI-Powered Solutions**: Get detailed explanations, code samples (10+ languages), and complexity analysis using Gemini (default & free), OpenAI, or Claude models
+- **AI-Powered Solutions**: Get detailed explanations, code samples (10+ languages), and complexity analysis using Gemini (default), OpenAI, or Claude models
 - **Customizable Hotkey**: Default global hotkey (`Ctrl+Shift+J`) to trigger analysis, with the option to rebind
 - **Cross-Platform Overlay**: Stealth overlay window designed for minimal distraction and screen sharing compatibility
 - **No Vendor Lock-in**: Fully open source, with no proprietary restrictions
@@ -44,17 +44,17 @@ npm install
 # Install Tesseract (macOS)
 brew install tesseract
 
-# Install Gemini CLI dependencies (for FREE AI)
+# Install Gemini CLI dependencies
 pip3 install google-generativeai
 
-# Get your FREE Gemini API key from: https://aistudio.google.com/app/apikey
-export GEMINI_API_KEY=your-free-key-here
+# Get your Gemini API key from: https://aistudio.google.com/app/apikey
+export GEMINI_API_KEY=your-api-key-here
 
-# Run the app - completely free!
+# Run the application
 npm run masa
 ```
 
-> **💡 Pro Tip**: Gemini provides 1,000 free requests daily - enough for serious coding work without any costs!
+> **Note**: Gemini provides 1,000 daily requests at no cost, which is typically sufficient for regular development use.
 
 ### Detailed Installation
 
@@ -116,57 +116,57 @@ Before installation, ensure you have the following installed:
 
 4. **Set up your AI provider**
    
-   **🆓 RECOMMENDED: Free Gemini Setup (Zero Cost)**
+   **Recommended: Gemini Setup (No Cost)**
    
-   Get your FREE Gemini API key:
+   Get your Gemini API key:
    1. Visit [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
-   2. Sign in with Google account (no credit card needed)
-   3. Create new API key - **completely free**
+   2. Sign in with Google account (no payment method required)
+   3. Create new API key
    4. Copy your key starting with "AIza..."
    
    ```bash
    # Install Gemini CLI dependencies (one-time setup)
    pip3 install google-generativeai
    
-   # Set your FREE API key
-   export GEMINI_API_KEY=your-free-gemini-key-here
+   # Set your API key
+   export GEMINI_API_KEY=your-gemini-api-key-here
    
-   # Run the app - zero costs!
+   # Run the application
    npm run masa
    ```
    
-   **Benefits of Free Gemini:**
-   - ✅ 1,000 requests per day (enough for professional use)
-   - ✅ 60 requests per minute (no annoying rate limits)
-   - ✅ Gemini 2.5 Pro quality (state-of-the-art AI)
-   - ✅ No credit card or billing setup required
-   - ✅ Works indefinitely - not a trial
+   **Gemini Features:**
+   - 1,000 requests per day at no cost
+   - 60 requests per minute rate limit
+   - Gemini 2.5 Pro quality with automatic fallback
+   - No billing setup required
+   - Suitable for long-term use
    
    ---
    
-   **Alternative Paid Options** (if you need more than 1,000 daily requests):
+   **Alternative Paid Options** (for usage above 1,000 daily requests):
    
    - **OpenAI**: Visit [platform.openai.com](https://platform.openai.com/api-keys) (~$0.003 per query)
    - **Claude (Anthropic)**: Visit [console.anthropic.com](https://console.anthropic.com/) (~$0.024 per query)
    
    **Configuration Methods:**
    
-   **Method A: Environment Variables (Recommended for Free Gemini)**
+   **Method A: Environment Variables (Recommended)**
    ```bash
-   # Set your FREE Gemini API key
-   export GEMINI_API_KEY=your-free-gemini-key-here
+   # Set your Gemini API key
+   export GEMINI_API_KEY=your-gemini-api-key-here
    
-   # Optional: Set paid alternatives if you have them
+   # Optional: Set alternative providers if needed
    # export OPENAI_API_KEY=your-openai-key-here
    # export ANTHROPIC_API_KEY=your-claude-key-here
    
-   # Run the app with free AI
+   # Run the application
    npm run masa
    ```
    
    **Method B: Runtime Configuration**
    - Start the application and click the settings gear (⚙️)
-   - **Gemini is pre-selected as default** (free option)
+   - Gemini is pre-selected as the default provider
    - Enter your API key in the settings panel
    - Keys are stored in memory only for security (never saved to disk)
 
@@ -240,7 +240,7 @@ For developers who want to contribute or modify Masa:
 
 ## Configuration
 
-- **AI Provider**: Gemini (Google) is the default free option with 1,000 daily requests
+- **AI Provider**: Gemini (Google) is the default provider with generous daily limits
 - **Hotkey**: The default hotkey is `Ctrl+Shift+J`. You can change this in the settings panel
 - **Language Support**: Choose from 10+ programming languages (Python, JavaScript, Java, C++, Go, Rust, etc.)
 - **Overlay**: The overlay window can be repositioned and minimized as required
@@ -255,17 +255,17 @@ For developers who want to contribute or modify Masa:
 4. **View solutions**: Solutions appear in the overlay with code examples and explanations
 5. **Manage settings**: Click ⚙️ to configure API keys, models, and hotkeys
 
-## 💰 Cost Breakdown
+## Cost Structure
 
-**FREE Option (Recommended):**
-- **Gemini (Google)**: $0.00 - Completely free with 1,000 daily requests ⭐
+**No-Cost Option (Default):**
+- **Gemini (Google)**: No charges with 1,000 daily requests
 
-**Paid Alternatives** (for heavy usage >1,000 requests/day):
+**Paid Alternatives** (for usage exceeding 1,000 requests/day):
 - **OpenAI GPT-3.5 Turbo**: ~$0.003 per analysis (cost-effective)
 - **OpenAI GPT-4**: ~$0.03-0.06 per analysis (premium quality)
 - **Claude 3.5 Sonnet**: ~$0.024 per analysis (balanced performance)
 
-**Example**: Most users stay well under the 1,000 free daily limit. Even heavy users analyzing 100 problems daily would only use 10% of the free quota!
+**Usage Context**: The default 1,000 daily request limit typically accommodates regular development workflows. Heavy users analyzing 100+ problems daily would utilize approximately 10% of the available quota.
 
 ## Security
 
