@@ -26,25 +26,34 @@ class GeminiCLI:
         """Generate code response using Gemini"""
         try:
             enhanced_prompt = f"""
-You are an expert {language} developer helping with screen capture detection avoidance techniques.
+You are an expert {language} developer and coding interview coach. Help analyze this coding problem with realistic interview strategies.
 
-Context: This is for a desktop application that needs to create overlay windows that attempt to avoid screen capture detection.
+Context: This is for coding interview preparation where showing natural problem-solving progression is important.
 
 Requirements:
-1. Write clean, readable, well-commented code
-2. Use descriptive variable names (e.g., 'screenCaptureExclusionWindow' instead of 'w')
-3. Add comprehensive comments explaining the logic
-4. Focus on cross-platform compatibility (macOS/Windows)
-5. Implement proper error handling
-6. Use modern {language} best practices
+1. **Problem Understanding**: Brief explanation of what the problem is asking
+2. **Multiple Solution Approaches**: 
+   - **Approach 1 - Initial/Intuitive**: A straightforward solution that naturally comes to mind first (may not be optimal, but shows logical thinking)
+   - **Approach 2 - Optimized**: The more efficient solution with better time/space complexity
+3. **Clean, Interview-Ready Code**: 
+   - Use descriptive variable names (e.g., 'leftPointer' instead of 'l', 'currentSum' instead of 's')
+   - Add comprehensive comments explaining the thought process
+   - Use clear function/method names that describe their purpose
+   - Structure code for maximum readability during interviews
+4. **Complexity Analysis**: Time and space complexity for each approach with clear explanations
+5. **Interview Insights**: 
+   - Why you might start with the first approach
+   - How you would naturally progress to the optimization
+   - Key patterns or techniques that demonstrate problem-solving skills
 
 User Request: {prompt}
 
-Please provide a complete, production-ready solution with:
-- Descriptive variable and function names
-- Inline comments explaining each step
-- Error handling and edge cases
-- Cross-platform considerations
+Please provide solutions in {language} that show realistic interview progression:
+- Start with a working but potentially suboptimal solution
+- Then show how you would optimize it
+- Explain the thought process between approaches
+- Use descriptive variable names and clear comments throughout
+- Make it look like natural problem-solving, not just the final optimal answer
 """
             
             response = self.model.generate_content(enhanced_prompt)

@@ -307,22 +307,25 @@ ${problemText}
 Please provide a solution specifically in ${currentSettings.language.toUpperCase()} with the following requirements:
 
 1. **Problem Understanding**: Brief explanation of what the problem is asking
-2. **Solution Approach**: Key algorithm/strategy to solve it
-3. **Clean Code Solution**: 
+2. **Multiple Solution Approaches**: 
+   - **Approach 1 - Initial/Brute Force**: A straightforward but not necessarily optimal solution that shows natural problem-solving progression
+   - **Approach 2 - Optimized**: The more efficient solution with better time/space complexity
+3. **Clean Code Solutions**: 
    - Use descriptive, meaningful variable names (no single letters like 'i', 'j', 'x', 'y')
    - Add comprehensive comments explaining each step
    - Use clear function/method names that describe what they do
    - Make the code as readable and self-documenting as possible
-4. **Complexity Analysis**: Time and space complexity with detailed explanations
-5. **Key Insights**: Important patterns or techniques used
+4. **Complexity Analysis**: Time and space complexity for each approach with detailed explanations
+5. **Key Insights**: Important patterns or techniques used, and why the optimization works
 
 Code Style Requirements:
 - Variable names should be descriptive (e.g., 'leftPointer' instead of 'l', 'targetSum' instead of 's')
 - Add inline comments explaining the logic
 - Use meaningful function names
 - Structure the code for maximum readability
+- Show the thought process from basic to optimized solution
 
-Format your response clearly with markdown formatting for easy reading.`;
+Format your response clearly with markdown formatting for easy reading. Present solutions in order from basic to optimal to demonstrate natural problem-solving progression.`;
 
     const response = await anthropic.messages.create({
       model: currentSettings.model || 'claude-3-5-sonnet-20241022',
@@ -378,13 +381,16 @@ ${problemText}
 Please provide a solution specifically in ${currentSettings.language.toUpperCase()} with these requirements:
 
 1. **Problem Explanation**: Brief explanation of what the problem is asking
-2. **Clean, Human-Readable Code Solution**: 
+2. **Multiple Solution Approaches**: 
+   - **Approach 1 - Basic/Intuitive**: A straightforward solution that comes naturally when first thinking about the problem (may not be optimal)
+   - **Approach 2 - Optimized**: A more efficient solution with better time/space complexity
+3. **Clean, Human-Readable Code Solutions**: 
    - Use descriptive, meaningful variable names (avoid single letters like 'i', 'j', 'x', 'y')
    - Add comprehensive comments explaining each step and logic
    - Use clear function/method names that describe their purpose
    - Make the code as readable and self-documenting as possible
-3. **Time and Space Complexity**: Detailed analysis with explanations
-4. **Key Insights**: Important patterns or techniques used
+4. **Time and Space Complexity**: Detailed analysis with explanations for each approach
+5. **Key Insights**: Important patterns or techniques used, and progression from basic to optimized
 
 Code Style Requirements:
 - Variable names must be descriptive (e.g., 'currentIndex' instead of 'i', 'targetValue' instead of 'x')
@@ -392,8 +398,9 @@ Code Style Requirements:
 - Use meaningful function names that clearly indicate what they do
 - Structure the code for maximum readability and maintainability
 - Include comments for complex logic or algorithms
+- Show natural problem-solving progression from intuitive to optimal
 
-Format your response in a structured way that's easy to read.
+Format your response in a structured way that's easy to read. Start with the more obvious solution first, then show the optimization.
 `;
 
     const response = await openai.chat.completions.create({
@@ -490,65 +497,107 @@ function generateFallbackSolution(text) {
   
   if (lowerText.includes('two sum')) {
     return `
-# Two Sum Problem Solution
+# Two Sum Problem - Multiple Approaches
 
-## JavaScript:
+## Approach 1: Brute Force (Initial Intuitive Solution)
+
 \`\`\`javascript
-function twoSum(nums, target) {
-    const map = new Map();
-    for (let i = 0; i < nums.length; i++) {
-        const complement = target - nums[i];
-        if (map.has(complement)) {
-            return [map.get(complement), i];
+function twoSumBruteForce(nums, target) {
+    // Check every pair of numbers to see if they sum to target
+    for (let firstIndex = 0; firstIndex < nums.length; firstIndex++) {
+        for (let secondIndex = firstIndex + 1; secondIndex < nums.length; secondIndex++) {
+            const currentSum = nums[firstIndex] + nums[secondIndex];
+            if (currentSum === target) {
+                return [firstIndex, secondIndex];
+            }
         }
-        map.set(nums[i], i);
     }
-    return [];
+    return []; // No solution found
 }
 \`\`\`
 
-## Python:
-\`\`\`python
-def twoSum(nums, target):
-    num_map = {}
-    for i, num in enumerate(nums):
-        complement = target - num
-        if complement in num_map:
-            return [num_map[complement], i]
-        num_map[num] = i
-    return []
+**Time Complexity:** O(n²) - nested loops  
+**Space Complexity:** O(1) - only using variables
+
+## Approach 2: Hash Map Optimization
+
+\`\`\`javascript
+function twoSumOptimized(nums, target) {
+    const numberToIndexMap = new Map();
+    
+    for (let currentIndex = 0; currentIndex < nums.length; currentIndex++) {
+        const currentNumber = nums[currentIndex];
+        const neededNumber = target - currentNumber;
+        
+        // Check if we've seen the number we need before
+        if (numberToIndexMap.has(neededNumber)) {
+            return [numberToIndexMap.get(neededNumber), currentIndex];
+        }
+        
+        // Store current number and its index for future lookups
+        numberToIndexMap.set(currentNumber, currentIndex);
+    }
+    return []; // No solution found
+}
 \`\`\`
 
-**Time Complexity:** O(n)  
-**Space Complexity:** O(n)
+**Time Complexity:** O(n) - single pass  
+**Space Complexity:** O(n) - hash map storage
 
-**Key Insight:** Use a hash map to store seen numbers and their indices.
+**Key Insight:** Trade space for time by using a hash map to avoid nested loops.
 `;
   }
   
   if (lowerText.includes('reverse') && lowerText.includes('linked list')) {
     return `
-# Reverse Linked List Solution
+# Reverse Linked List - Multiple Approaches
 
-## JavaScript:
+## Approach 1: Iterative (Most Common Interview Solution)
+
 \`\`\`javascript
-function reverseList(head) {
-    let prev = null;
-    let current = head;
+function reverseListIterative(head) {
+    let previousNode = null;
+    let currentNode = head;
     
-    while (current !== null) {
-        let next = current.next;
-        current.next = prev;
-        prev = current;
-        current = next;
+    // Traverse the list and reverse pointers as we go
+    while (currentNode !== null) {
+        let nextNode = currentNode.next; // Save the next node
+        currentNode.next = previousNode; // Reverse the pointer
+        previousNode = currentNode;      // Move previous forward
+        currentNode = nextNode;          // Move current forward
     }
     
-    return prev;
+    return previousNode; // previousNode is now the new head
 }
 \`\`\`
 
-**Time Complexity:** O(n)  
-**Space Complexity:** O(1)
+**Time Complexity:** O(n) - visit each node once  
+**Space Complexity:** O(1) - only using pointers
+
+## Approach 2: Recursive (More Advanced)
+
+\`\`\`javascript
+function reverseListRecursive(head) {
+    // Base case: empty list or single node
+    if (head === null || head.next === null) {
+        return head;
+    }
+    
+    // Recursively reverse the rest of the list
+    let reversedHead = reverseListRecursive(head.next);
+    
+    // Reverse the current connection
+    head.next.next = head;
+    head.next = null;
+    
+    return reversedHead;
+}
+\`\`\`
+
+**Time Complexity:** O(n) - visit each node once  
+**Space Complexity:** O(n) - recursion stack
+
+**Interview Tip:** Start with iterative approach as it's more intuitive and has better space complexity.
 `;
   }
   
