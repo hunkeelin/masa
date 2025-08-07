@@ -20,50 +20,36 @@ class GeminiCLI:
         
         genai.configure(api_key=self.api_key)
         # Use default model - let Gemini choose automatically
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        self.model = genai.GenerativeModel()
     
     def generate_response(self, prompt: str, language: str = "javascript") -> Dict[str, Any]:
         """Generate code response using Gemini"""
         try:
+            # Enhanced prompt for coding problems
             enhanced_prompt = f"""
-You are an expert {language} developer and coding interview coach. Help analyze this coding problem with realistic interview strategies.
-
-Context: This is for coding interview preparation where showing natural problem-solving progression is important.
-
-Requirements:
-1. **Problem Understanding**: Brief explanation of what the problem is asking
-2. **Multiple Solution Approaches**: 
-   - **Approach 1 - Initial/Intuitive**: A straightforward solution that naturally comes to mind first (may not be optimal, but shows logical thinking)
-   - **Approach 2 - Optimized**: The more efficient solution with better time/space complexity
-3. **Clean, Interview-Ready Code**: 
-   - Use descriptive variable names (e.g., 'leftPointer' instead of 'l', 'currentSum' instead of 's')
-   - Add comprehensive comments explaining the thought process
-   - Use clear function/method names that describe their purpose
-   - Structure code for maximum readability during interviews
-4. **Complexity Analysis**: Time and space complexity for each approach with clear explanations
-5. **Interview Insights**: 
-   - Why you might start with the first approach
-   - How you would naturally progress to the optimization
-   - Key patterns or techniques that demonstrate problem-solving skills
+You are an expert programmer analyzing coding problems. 
 
 User Request: {prompt}
 
-Please provide solutions in {language} that show realistic interview progression:
-- Start with a working but potentially suboptimal solution
-- Then show how you would optimize it
-- Explain the thought process between approaches
-- Use descriptive variable names and clear comments throughout
-- Make it look like natural problem-solving, not just the final optimal answer
 """
             
             response = self.model.generate_content(enhanced_prompt)
             
+            # Convert usage metadata to dict if it exists
+            usage_data = None
+            if hasattr(response, 'usage_metadata') and response.usage_metadata:
+                usage_data = {
+                    'prompt_tokens': getattr(response.usage_metadata, 'prompt_token_count', None),
+                    'completion_tokens': getattr(response.usage_metadata, 'candidates_token_count', None),
+                    'total_tokens': getattr(response.usage_metadata, 'total_token_count', None)
+                }
+            
             return {
                 "success": True,
                 "content": response.text,
+                "model": getattr(response, 'model', 'gemini-auto'),
                 "provider": "gemini",
-                "model": "gemini-pro (auto-selected)",
-                "language": language
+                "usage": usage_data
             }
             
         except Exception as e:
