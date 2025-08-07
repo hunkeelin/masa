@@ -13,7 +13,7 @@
         body {
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.65);
             font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
             color: #ffffff;
             border-radius: 8px;
@@ -440,6 +440,49 @@
             document.getElementById('status').textContent = message;
         }
         
+        function extractCodeFromSolution(text) {
+            // Extract code blocks from markdown-style solutions
+            const codeBlockRegex = /```[\w]*\n([\s\S]*?)\n```/g;
+            const matches = [];
+            let match;
+            
+            while ((match = codeBlockRegex.exec(text)) !== null) {
+                matches.push(match[1].trim());
+            }
+            
+            return matches;
+        }
+        
+        function formatSolutionDisplay(solutionText) {
+            const codeBlocks = extractCodeFromSolution(solutionText);
+            
+            // If we found code blocks, structure the display with code first
+            if (codeBlocks.length > 0) {
+                const mainCode = codeBlocks[0]; // First code block is usually the main solution
+                const explanationPart = solutionText.replace(/```[\w]*\n[\s\S]*?\n```/g, '').trim();
+                
+                return `
+                    <div class="solution-code-first">
+                        <div class="code-section">
+                            <h4 style="color: #00ff64; margin: 0 0 8px 0; font-size: 12px;">🚀 Code Solution</h4>
+                            <div class="code-block" style="background: rgba(0, 40, 0, 0.8); border: 1px solid rgba(0, 255, 100, 0.3); padding: 12px; border-radius: 4px; font-family: 'SF Mono', monospace; font-size: 11px; line-height: 1.4; white-space: pre-wrap; overflow-x: auto;">${mainCode}</div>
+                        </div>
+                        ${explanationPart ? `
+                        <details style="margin-top: 12px;">
+                            <summary style="color: #00ff64; cursor: pointer; font-size: 10px; font-weight: 600;">📝 Show Explanation & Analysis</summary>
+                            <div style="margin-top: 8px; font-size: 10px; line-height: 1.5; color: #ccc;">
+                                ${explanationPart.replace(/\n/g, '<br>')}
+                            </div>
+                        </details>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            // Fallback to original display if no code blocks found
+            return `<div class="code-block">${solutionText}</div>`;
+        }
+        
         function showSolution(data) {
             const welcome = document.getElementById('welcome');
             const container = document.getElementById('solution-container');
@@ -464,14 +507,15 @@
                     </div>
                 `;
             } else {
+                const formattedSolution = formatSolutionDisplay(data.solution || 'Processing...');
                 content.innerHTML = `
                     <div class="solution">
-                        <h3>✅ Solution Found</h3>
-                        <div class="code-block">${data.solution || 'Processing...'}</div>
+                        <h3 style="margin-bottom: 12px;">✅ Solution Found</h3>
+                        ${formattedSolution}
                         ${data.originalText ? `
-                            <details style="margin-top: 8px;">
-                                <summary style="color: #00ff64; cursor: pointer; font-size: 10px;">Show extracted text</summary>
-                                <div class="code-block" style="margin-top: 4px; font-size: 9px;">${data.originalText}</div>
+                            <details style="margin-top: 12px;">
+                                <summary style="color: #888; cursor: pointer; font-size: 9px;">Show extracted text</summary>
+                                <div class="code-block" style="margin-top: 4px; font-size: 9px; opacity: 0.7;">${data.originalText}</div>
                             </details>
                         ` : ''}
                     </div>

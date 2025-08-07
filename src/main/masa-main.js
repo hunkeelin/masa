@@ -97,9 +97,9 @@ function createMasaOverlay() {
   const { width, height } = primaryDisplay.workAreaSize;
 
   overlayWindow = new BrowserWindow({
-    width: 450,
-    height: 350,
-    x: width - 470,
+    width: 550,
+    height: 600,
+    x: width - 570,
     y: 20,
     
     // Stealth configuration
@@ -114,7 +114,7 @@ function createMasaOverlay() {
     
     // Screen capture exclusion
     hasShadow: false,
-    opacity: 0.92,
+    opacity: 0.75,
     
     // Platform-specific stealth settings
     ...(process.platform === 'darwin' && {
