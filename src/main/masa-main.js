@@ -272,6 +272,39 @@ function detectCodingProblem(text) {
   return keywordMatches >= 3;
 }
 
+// Centralized prompt builder for consistent AI responses
+function buildCodingPrompt(problemText, language) {
+  return `You are an expert programmer solving coding problems. For LeetCode-style problems, provide a well-structured response:
+
+Extracted problem text:
+${problemText}
+
+Please provide a solution in ${language.toUpperCase()} with this EXACT format:
+
+## 🚀 Solution
+
+\`\`\`${language.toLowerCase()}
+[Your complete, working code solution here]
+\`\`\`
+
+## 💡 Explanation
+
+[Brief explanation of the approach and key insights]
+
+## ⚡ Complexity
+- **Time**: O(n)
+- **Space**: O(1)
+
+CRITICAL CODE REQUIREMENTS:
+1. **Human-Readable Variables**: Use descriptive names like 'leftPointer', 'targetSum', 'currentNode' instead of single letters like 'i', 'j', 'x', 'y'
+2. **Comprehensive Comments**: Add inline comments explaining EVERY logical step and decision
+3. **Clear Function Names**: Use descriptive function/method names that explain what they do
+4. **Step-by-Step Logic**: Comment the reasoning behind each algorithm step
+5. **Edge Case Handling**: Comment on how edge cases are handled
+
+Make the code self-documenting and production-ready. Place the working code FIRST before any explanation.`;
+}
+
 async function getSolutionFromAI(problemText) {
   try {
     const isClaudeModel = currentSettings.model.includes('claude') || currentSettings.provider === 'claude';
@@ -299,33 +332,8 @@ async function getSolutionFromClaude(problemText) {
       throw new Error('Claude API not configured. Please set your Anthropic API key in settings.');
     }
 
-    const prompt = `You are an expert programmer analyzing a LeetCode/coding problem. Please provide a comprehensive solution.
-
-Extracted problem text:
-${problemText}
-
-Please provide a solution specifically in ${currentSettings.language.toUpperCase()} with the following requirements:
-
-1. **Problem Understanding**: Brief explanation of what the problem is asking
-2. **Multiple Solution Approaches**: 
-   - **Approach 1 - Initial/Brute Force**: A straightforward but not necessarily optimal solution that shows natural problem-solving progression
-   - **Approach 2 - Optimized**: The more efficient solution with better time/space complexity
-3. **Clean Code Solutions**: 
-   - Use descriptive, meaningful variable names (no single letters like 'i', 'j', 'x', 'y')
-   - Add comprehensive comments explaining each step
-   - Use clear function/method names that describe what they do
-   - Make the code as readable and self-documenting as possible
-4. **Complexity Analysis**: Time and space complexity for each approach with detailed explanations
-5. **Key Insights**: Important patterns or techniques used, and why the optimization works
-
-Code Style Requirements:
-- Variable names should be descriptive (e.g., 'leftPointer' instead of 'l', 'targetSum' instead of 's')
-- Add inline comments explaining the logic
-- Use meaningful function names
-- Structure the code for maximum readability
-- Show the thought process from basic to optimized solution
-
-Format your response clearly with markdown formatting for easy reading. Present solutions in order from basic to optimal to demonstrate natural problem-solving progression.`;
+    // Build the prompt using centralized function
+    const prompt = buildCodingPrompt(problemText, currentSettings.language);
 
     const response = await anthropic.messages.create({
       model: currentSettings.model || 'claude-3-5-sonnet-20241022',
@@ -371,37 +379,8 @@ async function getSolutionFromOpenAI(problemText) {
       throw new Error('OpenAI not configured. Please set your API key in settings.');
     }
 
-    const prompt = `
-You are an expert programmer. I've extracted this text from a LeetCode/coding problem screen. 
-Please analyze it and provide a solution.
-
-Extracted text:
-${problemText}
-
-Please provide a solution specifically in ${currentSettings.language.toUpperCase()} with these requirements:
-
-1. **Problem Explanation**: Brief explanation of what the problem is asking
-2. **Multiple Solution Approaches**: 
-   - **Approach 1 - Basic/Intuitive**: A straightforward solution that comes naturally when first thinking about the problem (may not be optimal)
-   - **Approach 2 - Optimized**: A more efficient solution with better time/space complexity
-3. **Clean, Human-Readable Code Solutions**: 
-   - Use descriptive, meaningful variable names (avoid single letters like 'i', 'j', 'x', 'y')
-   - Add comprehensive comments explaining each step and logic
-   - Use clear function/method names that describe their purpose
-   - Make the code as readable and self-documenting as possible
-4. **Time and Space Complexity**: Detailed analysis with explanations for each approach
-5. **Key Insights**: Important patterns or techniques used, and progression from basic to optimized
-
-Code Style Requirements:
-- Variable names must be descriptive (e.g., 'currentIndex' instead of 'i', 'targetValue' instead of 'x')
-- Add inline comments explaining the reasoning behind each step
-- Use meaningful function names that clearly indicate what they do
-- Structure the code for maximum readability and maintainability
-- Include comments for complex logic or algorithms
-- Show natural problem-solving progression from intuitive to optimal
-
-Format your response in a structured way that's easy to read. Start with the more obvious solution first, then show the optimization.
-`;
+    // Build the prompt using centralized function
+    const prompt = buildCodingPrompt(problemText, currentSettings.language);
 
     const response = await openai.chat.completions.create({
       model: currentSettings.model || "gpt-3.5-turbo",
@@ -444,33 +423,120 @@ async function getSolutionFromGemini(problemText) {
       throw new Error('Gemini API key not configured. Please set your Gemini API key in settings.');
     }
 
+    // Build the prompt using centralized function
+    const prompt = buildCodingPrompt(problemText, currentSettings.language);
+
     // Use the Python CLI to call Gemini
     const { promisify } = require('util');
     const execAsync = promisify(require('child_process').exec);
     
-    const command = `python3 "${path.join(__dirname, '../utils/gemini-cli.py')}" --prompt "${problemText.replace(/"/g, '\\"')}" --language "${currentSettings.language}"`;
+    // Write prompt to temporary file to avoid command line length/escaping issues
+    const os = require('os');
+    const tempDir = os.tmpdir();
+    const tempFile = path.join(tempDir, `masa_prompt_${Date.now()}.txt`);
     
-    // Set the API key as environment variable for the subprocess
-    const env = { ...process.env, GEMINI_API_KEY: currentSettings.geminiApiKey };
-    
-    const { stdout, stderr } = await execAsync(command, { env, timeout: 30000 });
-    
-    if (stderr) {
-      console.warn('Gemini CLI stderr:', stderr);
-    }
-    
-    const result = JSON.parse(stdout);
-    
-    if (!result.success) {
-      throw new Error(result.error || 'Gemini API error');
-    }
+    try {
+      // Write prompt to temp file
+      fs.writeFileSync(tempFile, prompt);
+      
+      // Use absolute path for python3 to avoid PATH issues in Electron
+      // Check for virtual environment first, then fall back to system paths
+      const venvPython = '/Users/keithlin/projects/masa/.masa/bin/python3'; // Virtual environment
+      const homebrewPython = '/opt/homebrew/bin/python3'; // macOS Homebrew default
+      const systemPython = 'python3'; // fallback for other systems
+      
+      let command;
+      try {
+        // Try the virtual environment python first (where google.generativeai is installed)
+        command = `"${venvPython}" "${path.join(__dirname, '../utils/gemini-cli.py')}" --prompt-file "${tempFile}" --language "${currentSettings.language}"`;
+        
+        // Set the API key as environment variable for the subprocess
+        const env = { ...process.env, GEMINI_API_KEY: currentSettings.geminiApiKey, PATH: process.env.PATH };
+        
+        const { stdout, stderr } = await execAsync(command, { env, timeout: 30000 });
+        
+        if (stderr) {
+          console.warn('Gemini CLI stderr:', stderr);
+        }
+        
+        const result = JSON.parse(stdout);
+        
+        if (!result.success) {
+          throw new Error(result.error || 'Gemini API error');
+        }
 
-    return {
-      solution: result.content,
-      originalText: problemText.substring(0, 300),
-      provider: 'Gemini',
-      model: result.model || 'gemini-1.5-flash'
-    };
+        return {
+          solution: result.content,
+          originalText: problemText.substring(0, 300),
+          provider: 'Gemini',
+          model: result.model || 'gemini-1.5-flash'
+        };
+        
+      } catch (venvError) {
+        console.log('Virtual env python3 failed, trying homebrew:', venvError.message);
+        
+        try {
+          // Try homebrew python3
+          command = `"${homebrewPython}" "${path.join(__dirname, '../utils/gemini-cli.py')}" --prompt-file "${tempFile}" --language "${currentSettings.language}"`;
+          
+          const env = { ...process.env, GEMINI_API_KEY: currentSettings.geminiApiKey, PATH: process.env.PATH };
+          
+          const { stdout, stderr } = await execAsync(command, { env, timeout: 30000 });
+          
+          if (stderr) {
+            console.warn('Gemini CLI stderr:', stderr);
+          }
+          
+          const result = JSON.parse(stdout);
+          
+          if (!result.success) {
+            throw new Error(result.error || 'Gemini API error');
+          }
+
+          return {
+            solution: result.content,
+            originalText: problemText.substring(0, 300),
+            provider: 'Gemini',
+            model: result.model || 'gemini-1.5-flash'
+          };
+          
+        } catch (homebrewError) {
+          console.log('Homebrew python3 failed, trying system python3:', homebrewError.message);
+          
+          // Final fallback to system python3
+          command = `${systemPython} "${path.join(__dirname, '../utils/gemini-cli.py')}" --prompt-file "${tempFile}" --language "${currentSettings.language}"`;
+          
+          const env = { ...process.env, GEMINI_API_KEY: currentSettings.geminiApiKey, PATH: process.env.PATH };
+          
+          const { stdout, stderr } = await execAsync(command, { env, timeout: 30000 });
+          
+          if (stderr) {
+            console.warn('Gemini CLI stderr:', stderr);
+          }
+          
+          const result = JSON.parse(stdout);
+          
+          if (!result.success) {
+            throw new Error(result.error || 'Gemini API error');
+          }
+
+          return {
+            solution: result.content,
+            originalText: problemText.substring(0, 300),
+            provider: 'Gemini',
+            model: result.model || 'gemini-1.5-flash'
+          };
+        }
+      }
+      
+    } finally {
+      // Clean up temp file
+      try {
+        fs.unlinkSync(tempFile);
+      } catch (cleanupError) {
+        console.warn('Failed to cleanup temp file:', cleanupError.message);
+      }
+    }
     
   } catch (error) {
     console.error('Gemini API error:', error);
@@ -732,16 +798,53 @@ ipcMain.on('test-api-key', async (event, testData) => {
       const { promisify } = require('util');
       const execAsync = promisify(require('child_process').exec);
       
-      const command = `python3 "${path.join(__dirname, '../utils/gemini-cli.py')}" --test`;
-      const env = { ...process.env, GEMINI_API_KEY: apiKey };
+      // Use virtual environment python first, then fallback paths
+      const venvPython = '/Users/keithlin/projects/masa/.masa/bin/python3';
+      const homebrewPython = '/opt/homebrew/bin/python3';
+      const systemPython = 'python3';
       
-      const { stdout } = await execAsync(command, { env, timeout: 10000 });
-      const result = JSON.parse(stdout);
+      let command;
+      const env = { ...process.env, GEMINI_API_KEY: apiKey, PATH: process.env.PATH };
       
-      if (result.success) {
-        event.reply('api-test-result', { success: true, provider: 'Gemini' });
-      } else {
-        throw new Error(result.error || 'Gemini test failed');
+      try {
+        // Try the virtual environment python first
+        command = `"${venvPython}" "${path.join(__dirname, '../utils/gemini-cli.py')}" --test`;
+        const { stdout } = await execAsync(command, { env, timeout: 10000 });
+        const result = JSON.parse(stdout);
+        
+        if (result.success) {
+          event.reply('api-test-result', { success: true, provider: 'Gemini' });
+        } else {
+          throw new Error(result.error || 'Gemini test failed');
+        }
+      } catch (venvError) {
+        console.log('Virtual env python3 test failed, trying homebrew:', venvError.message);
+        
+        try {
+          // Try homebrew python3
+          command = `"${homebrewPython}" "${path.join(__dirname, '../utils/gemini-cli.py')}" --test`;
+          const { stdout } = await execAsync(command, { env, timeout: 10000 });
+          const result = JSON.parse(stdout);
+          
+          if (result.success) {
+            event.reply('api-test-result', { success: true, provider: 'Gemini' });
+          } else {
+            throw new Error(result.error || 'Gemini test failed');
+          }
+        } catch (homebrewError) {
+          console.log('Homebrew python3 test failed, trying system python3:', homebrewError.message);
+          
+          // Final fallback to system python3
+          command = `${systemPython} "${path.join(__dirname, '../utils/gemini-cli.py')}" --test`;
+          const { stdout } = await execAsync(command, { env, timeout: 10000 });
+          const result = JSON.parse(stdout);
+          
+          if (result.success) {
+            event.reply('api-test-result', { success: true, provider: 'Gemini' });
+          } else {
+            throw new Error(result.error || 'Gemini test failed');
+          }
+        }
       }
     } else {
       const testOpenAI = new OpenAI({ apiKey });
