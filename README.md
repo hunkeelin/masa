@@ -1,5 +1,6 @@
 # Masa: Open Source AI Coding Assistant
 
+
 Masa is an open source desktop application that provides AI-powered coding assistance, inspired by [Cluely](https://cluely.com/) but with full transparency and no licensing restrictions. Masa leverages advanced AI models to analyze coding problems directly from your screen and deliver structured solutions, code samples, and key insights.
 
 ## Free AI Integration
